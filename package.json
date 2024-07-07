@@ -1,0 +1,20 @@
+{
+    "name": "chemical",
+    "version": "1.0.0",
+    "description": "Create your own web proxy using Ultraviolet fast, easy, and no experience required.",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/chemicaljs/chemical.git"
+    },
+    "main": "index.js",
+    "type": "module",
+    "author": "Nebelung",
+    "license": "MIT",
+    "dependencies": {
+        "@mercuryworkshop/bare-mux": "^1.1.4",
+        "@mercuryworkshop/epoxy-transport": "^2.0.6",
+        "@titaniumnetwork-dev/ultraviolet": "^3.1.5",
+        "express": "^4.19.2",
+        "wisp-server-node": "^1.1.0"
+    }
+}

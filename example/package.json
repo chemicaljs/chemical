@@ -1,0 +1,23 @@
+{
+  "name": "chemical-example",
+  "version": "1.0.0",
+  "description": "This is an example project for Chemical.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chemicaljs/chemical.git"
+  },
+  "author": "Nebelung",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chemicaljs/chemical/issues"
+  },
+  "homepage": "https://github.com/chemicaljs/chemical#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
