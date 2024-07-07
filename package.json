@@ -1,6 +1,6 @@
 {
     "name": "chemicaljs",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Create your own web proxy using Ultraviolet fast, easy, and no experience required.",
     "repository": {
         "type": "git",
