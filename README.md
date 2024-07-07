@@ -3,9 +3,11 @@ Create your own web proxy using Ultraviolet fast, easy, and no experience requir
 
 ## Setup
 
+A simple example can be found in `/example/`.
+
 ### Server
 
-Create a new node.js project and create a script file for the server.
+Create a new Node.js project and create a script file for the server.
 
 1. Install Chemical `npm install chemicaljs`.
 
@@ -60,7 +62,7 @@ In your project create a folder to store your static assets. Create an index.htm
 <script src="/chemical.js"></script>
 ```
 
-2. Encode a URL with Chemical using `window.chemicalEncode`.
+2. In a inline script or javascript file, encode a URL with Chemical using `window.chemicalEncode`.
 
 ```js
 window.chemicalEncode("https://example.com")
@@ -69,11 +71,13 @@ window.chemicalEncode("https://example.com")
 3. You may want to check if Chemical has loaded before encoding a URL.
 
 ```js
-window.chemicalLoaded //true or false
+if (window.chemicalLoaded) {
+    //Chemical is loaded
+}
 ```
 
 ```js
-window.addEventListener("chemicalLoaded", function (e) {
+window.addEventListener("chemicalLoaded", function(e) {
     //Chemical has loaded
 });
 ```
@@ -81,7 +85,7 @@ window.addEventListener("chemicalLoaded", function (e) {
 Below is a simple example of a simple input that redirects to the encoded URL when the user presses enter. It checks if there is any input and if Chemical has loaded before loading.
 
 ```html
-<h1>Chemical Demo</h1>
+<h1>Chemical Example</h1>
 <input id="search" placeholder="Enter URL">
 
 <script src="/chemical.js"></script>
