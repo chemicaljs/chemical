@@ -19,7 +19,7 @@ import { ChemicalServer } from "chemicaljs";
 const chemical = new ChemicalServer();
 ```
 
-3. Use `chemical.app` which is an express app. You may need to import express for certen APIs.
+3. Use `chemical.app` which is an express app. You may need to import express for certain APIs.
 
 ```js
 chemical.app.get("/", function(req, res){
