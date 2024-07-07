@@ -101,7 +101,7 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 Some features that may come in the future are:
 
 - More proxy services.
-- Easy client components (<chemical-input>).
+- Easy client components.
 - Easy tab cloaking components.
 
 ## License
