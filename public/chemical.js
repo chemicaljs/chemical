@@ -7,12 +7,11 @@ function chemicalEncode(url) {
 let wispURL = document.currentScript.getAttribute("wisp");
 
 async function registerSW() {
+    const connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
+    await connection.setTransport("/epoxy/module.js", [{ wisp: wispURL || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+
     if ("serviceWorker" in navigator) {
         await navigator.serviceWorker.register("/chemical.sw.js");
-
-        await window.BareMux.SetTransport("CurlMod.LibcurlClient", {
-            wisp: wispURL || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/",
-        });
     } else {
         console.error("Service worker failed to register.")
     }
@@ -33,9 +32,7 @@ async function loadScript(src) {
 }
 
 (async () => {
-    await loadScript("/baremux/bare.cjs");
-    await loadScript("/libcurl/index.js");
-    await loadScript("/epoxy/index.js");
+    await loadScript("/baremux/index.js");
     await loadScript("/uv/uv.bundle.js");
     await loadScript("/uv/uv.config.js");
     await registerSW();
