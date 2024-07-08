@@ -10,7 +10,7 @@ async function registerSW() {
     if ("serviceWorker" in navigator) {
         await navigator.serviceWorker.register("/chemical.sw.js");
 
-        await window.BareMux.SetTransport("EpxMod.EpoxyClient", {
+        await window.BareMux.SetTransport("CurlMod.LibcurlClient", {
             wisp: wispURL || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/",
         });
     } else {
@@ -34,6 +34,7 @@ async function loadScript(src) {
 
 (async () => {
     await loadScript("/baremux/bare.cjs");
+    await loadScript("/libcurl/index.js");
     await loadScript("/epoxy/index.js");
     await loadScript("/uv/uv.bundle.js");
     await loadScript("/uv/uv.config.js");
