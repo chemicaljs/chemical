@@ -20,15 +20,15 @@ class ChemicalServer {
             options = {}
         }
 
-        if (!options.uv) {
+        if (options.uv == undefined) {
             options.uv = true;
         }
 
-        if (!options.scramjet) {
+        if (options.scramjet == undefined) {
             options.scramjet = true;
         }
 
-        if (!options.rammerhead) {
+        if (options.rammerhead == undefined) {
             options.rammerhead = true;
         }
 
