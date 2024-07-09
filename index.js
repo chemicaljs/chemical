@@ -81,6 +81,8 @@ class ChemicalServer {
                     chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain
                     console.error("Error: Chemical default option invalid.")
                 }
+            } else {
+                chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain;
             }
 
             chemicalMain = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain
