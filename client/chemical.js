@@ -174,24 +174,30 @@ function rammerheadEncode(baseUrl) {
     })
 }
 
-async function chemicalEncode(url, service = "ultraviolet") {
+async function chemicalEncode(url, service = defaultService) {
     switch (service) {
-        case "ultraviolet":
-            return (
-                window.location.origin +
-                window.__uv$config.prefix +
-                window.__uv$config.encodeUrl(url)
-            );
+        case "uv":
+            if (uvEnabled) {
+                return (
+                    window.location.origin +
+                    window.__uv$config.prefix +
+                    window.__uv$config.encodeUrl(url)
+                );
+            }
             break;
         case "rammerhead":
-            return window.location.origin + (await rammerheadEncode(url));
+            if (rammerheadEnabled) {
+                return window.location.origin + (await rammerheadEncode(url));
+            }
             break;
         case "scramjet":
-            return (
-                window.location.origin +
-                window.__scramjet$config.prefix +
-                window.__scramjet$config.codec.encode(url)
-            );
+            if (scramjetEnabled) {
+                return (
+                    window.location.origin +
+                    window.__scramjet$config.prefix +
+                    window.__scramjet$config.codec.encode(url)
+                );
+            }
             break;
     }
 }
@@ -225,10 +231,14 @@ async function loadScript(src) {
 
 (async () => {
     await loadScript("/baremux/index.js");
-    await loadScript("/uv/uv.bundle.js");
-    await loadScript("/uv/uv.config.js");
-    await loadScript("/scramjet/scramjet.codecs.js");
-    await loadScript("/scramjet/scramjet.config.js");
+    if (uvEnabled) {
+        await loadScript("/uv/uv.bundle.js");
+        await loadScript("/uv/uv.config.js");
+    }
+    if (scramjetEnabled) {
+        await loadScript("/scramjet/scramjet.codecs.js");
+        await loadScript("/scramjet/scramjet.config.js");
+    }
     await registerSW();
     chemicalLoaded = true;
     window.dispatchEvent(new Event("chemicalLoaded"));

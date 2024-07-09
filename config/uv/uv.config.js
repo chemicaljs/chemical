@@ -1,5 +1,5 @@
 self.__uv$config = {
-	prefix: "/~/",
+	prefix: "/~/uv/",
 	encodeUrl: Ultraviolet.codec.xor.encode,
 	decodeUrl: Ultraviolet.codec.xor.decode,
 	handler: "/uv/uv.handler.js",

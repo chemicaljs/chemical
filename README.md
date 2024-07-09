@@ -19,6 +19,17 @@ import { ChemicalServer } from "chemicaljs";
 const chemical = new ChemicalServer();
 ```
 
+You can pass options to disable proxy services and set the default service.
+
+```js
+const chemical = new ChemicalServer({
+    default: "rammerhead",
+    uv: true,
+    scramjet: false,
+    rammerhead: true
+});
+```
+
 3. Use `chemical.app` which is an express app. You may need to import express for certain APIs.
 
 ```js
@@ -74,7 +85,7 @@ If you want to set the wisp server to an external server just change the `wisp` 
 await window.chemicalEncode("https://example.com")
 ```
 
-Optional: Change service to `ultraviolet`, `scramjet`, or `rammerhead`.
+Optional: Change service to `ultraviolet`, `scramjet`, or `rammerhead`. Defaults to `uv` or server option.
 
 ```js
 await window.chemicalEncode("https://example.com", "rammerhead")
@@ -116,7 +127,6 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 
 Some features that may come in the future are:
 
-- Server options to disable services.
 - Easy client components.
 - Easy tab cloaking components.
 
