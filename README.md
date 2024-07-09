@@ -1,5 +1,5 @@
 # Chemical
-Create your own web proxy using Ultraviolet fast, easy, and no experience required.
+Easily create your own web proxy with no experience required.
 
 ## Setup
 
@@ -62,10 +62,22 @@ In your project create a folder to store your static assets. Create an index.htm
 <script src="/chemical.js"></script>
 ```
 
-2. In a inline script or javascript file, encode a URL with Chemical using `window.chemicalEncode`.
+If you want to set the wisp server to an external server just change the `wisp` attribute.
+
+```html
+<script wisp="wss://wisp.mercurywork.shop" src="/chemical.js"></script>
+```
+
+2. In a inline script or javascript file, encode a URL with Chemical using the async function `window.chemicalEncode`.
 
 ```js
-window.chemicalEncode("https://example.com")
+await window.chemicalEncode("https://example.com")
+```
+
+Optional: Change service to `ultraviolet`, `scramjet`, or `rammerhead`.
+
+```js
+await window.chemicalEncode("https://example.com", "rammerhead")
 ```
 
 3. You may want to check if Chemical has loaded before encoding a URL.
@@ -92,9 +104,9 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 <script>
     const search = document.getElementById("search");
 
-    search.addEventListener("keydown", function (e) {
+    search.addEventListener("keydown", async function (e) {
         if (e.key == "Enter" && window.chemicalLoaded && e.target.value) {
-            window.location = window.chemicalEncode(e.target.value)
+            window.location = await window.chemicalEncode(e.target.value)
         }
     })
 </script>
@@ -104,7 +116,7 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 
 Some features that may come in the future are:
 
-- More proxy services.
+- Server options to disable services.
 - Easy client components.
 - Easy tab cloaking components.
 
