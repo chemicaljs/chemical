@@ -11,9 +11,25 @@ import createRammerhead from "rammerhead/src/server/index.js";
 
 class ChemicalServer {
     constructor(options) {
-        if (typeof options !== "object" || Array.isArray(options)) {
+        if (options) {
+            if (typeof options !== "object" || Array.isArray(options)) {
+                options = {}
+                console.error("Error: ChemicalServer options invalid.")
+            }
+        } else {
             options = {}
-            console.error("Error: ChemicalServer options invalid.")
+        }
+
+        if (!options.uv) {
+            options.uv = true;
+        }
+
+        if (!options.scramjet) {
+            options.scramjet = true;
+        }
+
+        if (!options.rammerhead) {
+            options.rammerhead = true;
         }
 
         const rh = createRammerhead()
@@ -67,21 +83,9 @@ class ChemicalServer {
                 }
             }
 
-            if (options.uv == false) {
-                chemicalMain = "const uvEnabled = false;\n" + chemicalMain
-            } else {
-                chemicalMain = "const uvEnabled = true;\n" + chemicalMain
-            }
-            if (options.scramjet == false) {
-                chemicalMain = "const scramjetEnabled = false;\n" + chemicalMain
-            } else {
-                chemicalMain = "const scramjetEnabled = true;\n" + chemicalMain
-            }
-            if (options.rammerhead == false) {
-                chemicalMain = "const rammerheadEnabled = false;\n" + chemicalMain
-            } else {
-                chemicalMain = "const rammerheadEnabled = true;\n" + chemicalMain
-            }
+            chemicalMain = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain
+            chemicalMain = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalMain
+            chemicalMain = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalMain
 
             res.type("application/javascript");
             return res.send(chemicalMain);
@@ -89,21 +93,9 @@ class ChemicalServer {
         this.app.get("/chemical.sw.js", async function (req, res) {
             let chemicalSW = await readFileSync(resolve(import.meta.dirname, "client/chemical.sw.js"), "utf8");
 
-            if (options.uv == false) {
-                chemicalSW = "const uvEnabled = false;\n\n" + chemicalSW
-            } else {
-                chemicalSW = "const uvEnabled = true;\n\n" + chemicalSW
-            }
-            if (options.scramjet == false) {
-                chemicalSW = "const scramjetEnabled = false;\n" + chemicalSW
-            } else {
-                chemicalSW = "const scramjetEnabled = true;\n" + chemicalSW
-            }
-            if (options.rammerhead == false) {
-                chemicalSW = "const rammerheadEnabled = false;\n" + chemicalSW
-            } else {
-                chemicalSW = "const rammerheadEnabled = true;\n" + chemicalSW
-            }
+            chemicalSW = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW
+            chemicalSW = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalSW
+            chemicalSW = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalSW
 
             res.type("application/javascript");
             return res.send(chemicalSW);
@@ -111,16 +103,16 @@ class ChemicalServer {
         this.app.use(express.static(resolve(import.meta.dirname, "client")));
         this.app.use("/baremux/", express.static(baremuxPath));
         this.app.use("/epoxy/", express.static(epoxyPath));
-        if (options.uv !== false) {
+        if (options.uv) {
             this.app.use("/uv/", express.static(resolve(import.meta.dirname, "config/uv")));
             this.app.use("/uv/", express.static(uvPath));
         }
-        if (options.scramjet !== false) {
+        if (options.scramjet) {
             this.app.use("/scramjet/", express.static(resolve(import.meta.dirname, "config/scramjet")));
             this.app.use("/scramjet/", express.static(scramjetPath));
         }
         this.server.on("request", (req, res) => {
-            if (options.rammerhead !== false && shouldRouteRh(req)) {
+            if (options.rammerhead && shouldRouteRh(req)) {
                 routeRhRequest(req, res);
             } else {
                 this.app(req, res);
@@ -129,7 +121,7 @@ class ChemicalServer {
         this.server.on("upgrade", (req, socket, head) => {
             if (req.url && req.url.endsWith("/wisp/")) {
                 wisp.routeRequest(req, socket, head);
-            } else if (options.rammerhead !== false && shouldRouteRh(req)) {
+            } else if (options.rammerhead && shouldRouteRh(req)) {
                 routeRhUpgrade(req, socket, head);
             } else {
                 socket.end();
