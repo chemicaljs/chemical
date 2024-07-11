@@ -9,7 +9,7 @@
     "main": "index.js",
     "type": "module",
     "author": "Nebelung",
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "dependencies": {
         "@mercuryworkshop/bare-mux": "^2.0.1",
         "@mercuryworkshop/epoxy-transport": "^2.1.3",
