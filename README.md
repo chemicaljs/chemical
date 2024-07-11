@@ -3,7 +3,9 @@ Easily create your own web proxy with no experience required.
 
 ## Setup
 
-A simple example can be found in `/example/`.
+A simple example can be found in [`/example/`](https://github.com/chemicaljs/chemical/tree/main/example).
+
+A example with the vite plugin can be found in [`/example-vite/`](https://github.com/chemicaljs/chemical/tree/main/example).
 
 ### Server
 
@@ -121,6 +123,36 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
         }
     })
 </script>
+```
+
+### Vite Plugin
+
+1. Create a new vite app and open `vite.config.js` or `vite.config.ts`
+
+2. Import `ChemicalPluginVite` and add it to plugins.
+
+```js
+import { defineConfig } from "vite"
+import { ChemicalPluginVite } from "chemicaljs"
+
+export default defineConfig({
+    plugins: [/*Other plugins*/ChemicalPluginVite()],
+})
+```
+
+You can pass options to just like on the main server.
+
+```js
+export default defineConfig({
+    plugins: [
+        ChemicalPluginVite({
+            default: "rammerhead",
+            uv: true,
+            scramjet: false,
+            rammerhead: true
+        })
+    ],
+})
 ```
 
 ## Future Addition

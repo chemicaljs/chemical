@@ -1,0 +1,19 @@
+{
+  "name": "chemical-example-vite",
+  "description": "This is an example project for Chemical.",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "chemicaljs": "^1.2.5",
+    "express": "^4.19.2",
+    "preact": "^10.22.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.8.2",
+    "vite": "^5.3.1"
+  }
+}
