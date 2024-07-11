@@ -206,7 +206,7 @@ let wispURL = document.currentScript.getAttribute("wisp");
 
 async function registerSW() {
     const connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
-    await connection.setTransport("/epoxy/module.js", [{ wisp: wispURL || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispURL || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
 
     if ("serviceWorker" in navigator) {
         await navigator.serviceWorker.register("/chemical.sw.js");
