@@ -1,4 +1,4 @@
-import { ChemicalServer } from "../index.js";
+import { ChemicalServer } from "chemicaljs";
 import express from "express";
 
 const chemical = new ChemicalServer();
