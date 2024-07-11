@@ -1,6 +1,6 @@
 {
     "name": "chemicaljs",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "description": "Easily create your own web proxy with no experience required.",
     "repository": {
         "type": "git",
@@ -11,10 +11,10 @@
     "author": "Nebelung",
     "license": "MIT",
     "dependencies": {
-        "@mercuryworkshop/bare-mux": "^2.0.0",
-        "@mercuryworkshop/epoxy-transport": "^2.1.0",
+        "@mercuryworkshop/bare-mux": "^2.0.1",
+        "@mercuryworkshop/epoxy-transport": "^2.1.2",
         "@mercuryworkshop/scramjet": "^1.0.2",
-        "@titaniumnetwork-dev/ultraviolet": "^3.2.0",
+        "@titaniumnetwork-dev/ultraviolet": "^3.2.1",
         "express": "^4.19.2",
         "rammerhead": "https://github.com/chemicaljs/chemical/raw/main/rammerhead.tgz",
         "wisp-server-node": "^1.1.0"
