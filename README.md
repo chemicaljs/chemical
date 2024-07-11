@@ -141,14 +141,14 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 
 1. Create a new vite app and open `vite.config.js` or `vite.config.ts`
 
-2. Import `ChemicalPluginVite` and add it to plugins.
+2. Import `ChemicalVitePlugin` and add it to plugins.
 
 ```js
 import { defineConfig } from "vite"
-import { ChemicalPluginVite } from "chemicaljs"
+import { ChemicalVitePlugin } from "chemicaljs"
 
 export default defineConfig({
-    plugins: [/*Other plugins*/ChemicalPluginVite()],
+    plugins: [/*Other plugins*/ChemicalVitePlugin()],
 })
 ```
 
@@ -157,7 +157,7 @@ You can pass options to just like on the main server.
 ```js
 export default defineConfig({
     plugins: [
-        ChemicalPluginVite({
+        ChemicalVitePlugin({
             default: "rammerhead",
             uv: true,
             scramjet: false,

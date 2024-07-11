@@ -134,8 +134,8 @@ class ChemicalServer {
     }
 }
 
-const ChemicalPluginVite = (options) => ({
-    name: "chemical-plugin-vite",
+const ChemicalVitePlugin = (options) => ({
+    name: "chemical-vite-plugin",
     configureServer(server) {
         if (options) {
             if (typeof options !== "object" || Array.isArray(options)) {
@@ -270,4 +270,4 @@ const ChemicalPluginVite = (options) => ({
     }
 })
 
-export { ChemicalServer, ChemicalPluginVite };
+export { ChemicalServer, ChemicalVitePlugin };
