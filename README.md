@@ -5,7 +5,7 @@ Easily create your own web proxy with no experience required.
 
 A simple example can be found in [`/example/`](https://github.com/chemicaljs/chemical/tree/main/example).
 
-A example with the vite plugin can be found in [`/example-vite/`](https://github.com/chemicaljs/chemical/tree/main/example).
+A example with the vite plugin can be found in [`/example-vite/`](https://github.com/chemicaljs/chemical/tree/main/example-vite).
 
 ### Server
 
