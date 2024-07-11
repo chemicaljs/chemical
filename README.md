@@ -81,6 +81,12 @@ If you want to set the wisp server to an external server just change the `wisp` 
 <script wisp="wss://wisp.mercurywork.shop" src="/chemical.js"></script>
 ```
 
+If you want to set the transport just change the `transport` attribute. Choose `libcurl` (default becuase it supports Firefox) or `epoxy`.
+
+```html
+<script transport="epoxy" src="/chemical.js"></script>
+```
+
 2. In a inline script or javascript file, encode a URL with Chemical using the async function `window.chemicalEncode`.
 
 ```js
@@ -105,6 +111,12 @@ if (window.chemicalLoaded) {
 window.addEventListener("chemicalLoaded", function(e) {
     //Chemical has loaded
 });
+```
+
+4. Change the transport and Wisp URL with `chemicalTransport`
+
+```js
+await chemicalTransport("libcurl", "wss://wisp.mercurywork.shop")
 ```
 
 Below is a simple example of a simple input that redirects to the encoded URL when the user presses enter. It checks if there is any input and if Chemical has loaded before loading.

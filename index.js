@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import express from "express";
 import wisp from "wisp-server-node";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
+import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
@@ -104,6 +105,7 @@ class ChemicalServer {
         });
         this.app.use(express.static(resolve(import.meta.dirname, "client")));
         this.app.use("/baremux/", express.static(baremuxPath));
+        this.app.use("/libcurl/", express.static(libcurlPath));
         this.app.use("/epoxy/", express.static(epoxyPath));
         if (options.uv) {
             this.app.use("/uv/", express.static(resolve(import.meta.dirname, "config/uv")));
@@ -227,6 +229,7 @@ const ChemicalPluginVite = (options) => ({
         });
         app.use(express.static(resolve(import.meta.dirname, "client")));
         app.use("/baremux/", express.static(baremuxPath));
+        app.use("/libcurl/", express.static(libcurlPath));
         app.use("/epoxy/", express.static(epoxyPath));
         if (options.uv) {
             app.use("/uv/", express.static(resolve(import.meta.dirname, "config/uv")));

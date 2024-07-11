@@ -202,11 +202,29 @@ async function chemicalEncode(url, service = defaultService) {
     }
 }
 
+function getTransport(transport) {
+    switch (transport) {
+        case "libcurl":
+            return "/libcurl/index.mjs"
+            break;
+        case "epoxy":
+            return "/epoxy/index.mjs"
+            break;
+    }
+}
+
+let connection;
+
 let wispURL = document.currentScript.getAttribute("wisp");
+let transport = document.currentScript.getAttribute("transport");
+
+async function chemicalTransport(transport, wisp) {
+    await connection.setTransport(getTransport(transport) || "/libcurl/index.mjs", [{ wisp: wisp || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+}
 
 async function registerSW() {
-    const connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
-    await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispURL || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+    connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
+    await chemicalTransport();
 
     if ("serviceWorker" in navigator) {
         await navigator.serviceWorker.register("/chemical.sw.js");
