@@ -3,12 +3,13 @@ Easily create your own web proxy with no experience required.
 
 ## Setup
 
-A simple example can be found in [`/example/`](https://github.com/chemicaljs/chemical/tree/main/example).
+A simple example can be found in [`/example/`](https://github.com/chemicaljs/chemical/tree/main/examples/example).
 
-A example with the vite plugin can be found in [`/example-vite/`](https://github.com/chemicaljs/chemical/tree/main/example-vite).
+A example with the vite plugin can be found in [`/example-vite/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-vite).
 
-A example with all the components can be found in [`/example-components/`](https://github.com/chemicaljs/chemical/tree/main/example-components).
+A example with all the components can be found in [`/example-components/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-components).
 
+A real word styled example can be found in [`/example-styled/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-styled).
 
 ### Server
 
