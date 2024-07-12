@@ -140,7 +140,7 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 </script>
 ```
 
-### Vite Plugin
+## Vite Plugin
 
 1. Create a new vite app and open `vite.config.js` or `vite.config.ts`
 
@@ -188,7 +188,7 @@ Opens in the current tab when the enter key is pressed.
 
 ```html
 <input target="_self" placeholder="Enter URL" is="chemical-input">
-``
+```
 
 Opens in current tab when the enter key is pressed.
 
