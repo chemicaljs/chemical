@@ -167,12 +167,5 @@ export default defineConfig({
 })
 ```
 
-## Future Addition
-
-Some features that may come in the future are:
-
-- Easy client components.
-- Easy tab cloaking components.
-
 ## License
 Chemical Uses the MIT license.

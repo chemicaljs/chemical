@@ -10,6 +10,8 @@ import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
 import createRammerhead from "rammerhead/src/server/index.js";
 
+const __dirname = new URL(".", import.meta.url).pathname;
+
 class ChemicalServer {
     constructor(options) {
         if (options) {
@@ -73,7 +75,7 @@ class ChemicalServer {
         this.server = createServer();
         this.app = express();
         this.app.get("/chemical.js", async function (req, res) {
-            let chemicalMain = await readFileSync(resolve(import.meta.dirname, "client/chemical.js"), "utf8");
+            let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
 
             if (options.default) {
                 if (["uv", "rammerhead", "scramjet"].includes(options.default)) {
@@ -94,7 +96,7 @@ class ChemicalServer {
             return res.send(chemicalMain);
         });
         this.app.get("/chemical.sw.js", async function (req, res) {
-            let chemicalSW = await readFileSync(resolve(import.meta.dirname, "client/chemical.sw.js"), "utf8");
+            let chemicalSW = await readFileSync(resolve(__dirname, "client/chemical.sw.js"), "utf8");
 
             chemicalSW = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW
             chemicalSW = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalSW
@@ -103,16 +105,16 @@ class ChemicalServer {
             res.type("application/javascript");
             return res.send(chemicalSW);
         });
-        this.app.use(express.static(resolve(import.meta.dirname, "client")));
+        this.app.use(express.static(resolve(__dirname, "client")));
         this.app.use("/baremux/", express.static(baremuxPath));
         this.app.use("/libcurl/", express.static(libcurlPath));
         this.app.use("/epoxy/", express.static(epoxyPath));
         if (options.uv) {
-            this.app.use("/uv/", express.static(resolve(import.meta.dirname, "config/uv")));
+            this.app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
             this.app.use("/uv/", express.static(uvPath));
         }
         if (options.scramjet) {
-            this.app.use("/scramjet/", express.static(resolve(import.meta.dirname, "config/scramjet")));
+            this.app.use("/scramjet/", express.static(resolve(__dirname, "config/scramjet")));
             this.app.use("/scramjet/", express.static(scramjetPath));
         }
         this.server.on("request", (req, res) => {
@@ -197,7 +199,7 @@ const ChemicalVitePlugin = (options) => ({
 
         const app = express();
         app.get("/chemical.js", async function (req, res) {
-            let chemicalMain = await readFileSync(resolve(import.meta.dirname, "client/chemical.js"), "utf8");
+            let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
 
             if (options.default) {
                 if (["uv", "rammerhead", "scramjet"].includes(options.default)) {
@@ -218,7 +220,7 @@ const ChemicalVitePlugin = (options) => ({
             return res.send(chemicalMain);
         });
         app.get("/chemical.sw.js", async function (req, res) {
-            let chemicalSW = await readFileSync(resolve(import.meta.dirname, "client/chemical.sw.js"), "utf8");
+            let chemicalSW = await readFileSync(resolve(__dirname, "client/chemical.sw.js"), "utf8");
 
             chemicalSW = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW
             chemicalSW = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalSW
@@ -227,16 +229,16 @@ const ChemicalVitePlugin = (options) => ({
             res.type("application/javascript");
             return res.send(chemicalSW);
         });
-        app.use(express.static(resolve(import.meta.dirname, "client")));
+        app.use(express.static(resolve(__dirname, "client")));
         app.use("/baremux/", express.static(baremuxPath));
         app.use("/libcurl/", express.static(libcurlPath));
         app.use("/epoxy/", express.static(epoxyPath));
         if (options.uv) {
-            app.use("/uv/", express.static(resolve(import.meta.dirname, "config/uv")));
+            app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
             app.use("/uv/", express.static(uvPath));
         }
         if (options.scramjet) {
-            app.use("/scramjet/", express.static(resolve(import.meta.dirname, "config/scramjet")));
+            app.use("/scramjet/", express.static(resolve(__dirname, "config/scramjet")));
             app.use("/scramjet/", express.static(scramjetPath));
         }
 
