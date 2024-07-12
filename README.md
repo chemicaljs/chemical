@@ -7,6 +7,9 @@ A simple example can be found in [`/example/`](https://github.com/chemicaljs/che
 
 A example with the vite plugin can be found in [`/example-vite/`](https://github.com/chemicaljs/chemical/tree/main/example-vite).
 
+A example with all the components can be found in [`/example-components/`](https://github.com/chemicaljs/chemical/tree/main/example-components).
+
+
 ### Server
 
 Create a new Node.js project and create a script file for the server.
@@ -69,7 +72,7 @@ chemical.server.listen(port, () => {
 
 In your project create a folder to store your static assets. Create an index.html file which will be the homepage of your website.
 
-1. Add the Chemical script to the top of your page. This will load all needed scripts for Ultraviolet and Chemical.
+1. Add the Chemical script to the top of your page. This will load all needed scripts for Chemical and other packages.
 
 ```html
 <script src="/chemical.js"></script>
@@ -93,7 +96,7 @@ If you want to set the transport just change the `transport` attribute. Choose `
 await window.chemicalEncode("https://example.com")
 ```
 
-Optional: Change service to `ultraviolet`, `scramjet`, or `rammerhead`. Defaults to `uv` or server option.
+Optional: Change service to `uv`, `scramjet`, or `rammerhead`. Defaults to `uv` or server option.
 
 ```js
 await window.chemicalEncode("https://example.com", "rammerhead")
@@ -165,6 +168,79 @@ export default defineConfig({
         })
     ],
 })
+```
+
+## Components
+Setup a proxy site with easy HTML components.
+
+1. Add the Chemical components along with the main script to the top of your page.
+
+```html
+<script src="/chemical.js"></script>
+<script src="/chemical.components.js"></script>
+```
+
+2. Now add any component to your site!
+
+### Basic Input
+
+Opens in the current tab when the enter key is pressed.
+
+```html
+<input target="_self" placeholder="Enter URL" is="chemical-input">
+``
+
+Opens in current tab when the enter key is pressed.
+
+```html
+<input target="_blank" placeholder="Enter URL" is="chemical-input">
+```
+
+Custom action when the enter key is pressed. Change `action` to your function name. The first parameter of the action will be the encoded URL.
+
+```html
+<input action="logURL" placeholder="Enter URL" is="chemical-input">
+<script>
+    function logURL(url) {
+        console.log(url)
+    }
+</script>
+```
+
+### Input with Button
+
+Opens when the enter key is pressed or button is clicked. Set the `for` attribute to the `id` of the button.
+
+```html
+<input id="my-input" target="_blank" placeholder="Enter URL" is="chemical-input">
+<button for="my-input" is="chemical-button">Go!</button>
+```
+
+### With iframe
+
+A hidden iframe that is shown when the enter key is pressed. Set the `frame` attribute to the `id` of the iframe.
+
+```html
+<input frame="my-iframe" placeholder="Enter URL" is="chemical-input">
+<iframe id="my-iframe" is="chemical-iframe"></iframe>
+```
+
+A hidden iframe that is shown when the enter key is pressed. Includes controls the are hidden when the iframe is hidden and can control websites in the iframe as well as hiding the iframe and controls.
+
+Set the `frame` attribute to the `id` of the iframe.
+Set the `controls` attribute to the `id` of the controls.
+
+Set the second parameter of `chemicalAction` to the `id` of the iframe.
+
+```html
+<input frame="my-iframe-2" placeholder="Enter URL" is="chemical-input">
+<section id="my-controls-2" is="chemical-controls">
+    <button onclick="chemicalAction('back', 'my-iframe-2')">←</button>
+    <button onclick="chemicalAction('forward', 'my-iframe-2')">→</button>
+    <button onclick="chemicalAction('reload', 'my-iframe-2')">⟳</button>
+    <button onclick="chemicalAction('close', 'my-iframe-2')">🗙</button>
+</section>
+<iframe controls="my-controls-2" id="my-iframe-2" is="chemical-iframe"></iframe>
 ```
 
 ## License

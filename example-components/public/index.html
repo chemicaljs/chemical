@@ -1,0 +1,33 @@
+<h1>Chemical Example</h1>
+
+<p>Open in current tab</p>
+<input target="_self" placeholder="Enter URL" is="chemical-input">
+<p>Open in new tab</p>
+<input target="_blank" placeholder="Enter URL" is="chemical-input">
+<p>Custom action (console log)</p>
+<input action="logURL" placeholder="Enter URL" is="chemical-input">
+<script>
+    function logURL(url) {
+        console.log(url)
+    }
+</script>
+<p>With button</p>
+<input id="my-input" target="_blank" placeholder="Enter URL" is="chemical-input">
+<button for="my-input" is="chemical-button">Go!</button>
+<p>With iframe</p>
+<input frame="my-iframe" placeholder="Enter URL" is="chemical-input">
+<br>
+<iframe id="my-iframe" is="chemical-iframe"></iframe>
+<p>With iframe and controls</p>
+<input frame="my-iframe-2" placeholder="Enter URL" is="chemical-input">
+<section id="my-controls-2" is="chemical-controls">
+    <button onclick="chemicalAction('back', 'my-iframe-2')">←</button>
+    <button onclick="chemicalAction('forward', 'my-iframe-2')">→</button>
+    <button onclick="chemicalAction('reload', 'my-iframe-2')">⟳</button>
+    <button onclick="chemicalAction('close', 'my-iframe-2')">🗙</button>
+</section>
+<br>
+<iframe controls="my-controls-2" id="my-iframe-2" is="chemical-iframe"></iframe>
+
+<script src="/chemical.js"></script>
+<script src="/chemical.components.js"></script>
