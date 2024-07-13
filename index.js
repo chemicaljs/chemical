@@ -127,6 +127,12 @@ class ChemicalServer {
         });
         this.server.on("upgrade", (req, socket, head) => {
             if (req.url && req.url.endsWith("/wisp/")) {
+                if (options.hostname_blacklist) {
+                    wisp.options.hostname_blacklist = options.hostname_blacklist
+                }
+                if (options.hostname_whitelist) {
+                    wisp.options.hostname_whitelist = options.hostname_whitelist
+                }
                 wisp.routeRequest(req, socket, head);
             } else if (options.rammerhead && shouldRouteRh(req)) {
                 routeRhUpgrade(req, socket, head);
@@ -261,6 +267,12 @@ const ChemicalVitePlugin = (options) => ({
 
         server.httpServer.on("upgrade", (req, socket, head) => {
             if (req.url && req.url.endsWith("/wisp/")) {
+                if (options.hostname_blacklist) {
+                    wisp.options.hostname_blacklist = options.hostname_blacklist
+                }
+                if (options.hostname_whitelist) {
+                    wisp.options.hostname_whitelist = options.hostname_whitelist
+                }
                 wisp.routeRequest(req, socket, head)
             } else if (options.rammerhead && shouldRouteRh(req)) {
                 routeRhUpgrade(req, socket, head)

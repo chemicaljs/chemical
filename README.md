@@ -32,7 +32,9 @@ const chemical = new ChemicalServer({
     default: "rammerhead",
     uv: true,
     scramjet: false,
-    rammerhead: true
+    rammerhead: true,
+    hostname_blacklist: [ /google\.com/, /reddit\.com/ ],
+    hostname_whitelist: [ /example\.com/ ]
 });
 ```
 
@@ -165,7 +167,9 @@ export default defineConfig({
             default: "rammerhead",
             uv: true,
             scramjet: false,
-            rammerhead: true
+            rammerhead: true,
+            hostname_blacklist: [ /google\.com/, /reddit\.com/ ],
+            hostname_whitelist: [ /example\.com/ ]
         })
     ],
 })
