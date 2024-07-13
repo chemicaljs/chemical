@@ -1,6 +1,7 @@
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
+import { fileURLToPath } from 'node:url';
 import express from "express";
 import wisp from "wisp-server-node";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
@@ -10,7 +11,7 @@ import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
 import createRammerhead from "rammerhead/src/server/index.js";
 
-const __dirname = new URL(".", import.meta.url).pathname;
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 class ChemicalServer {
     constructor(options) {
