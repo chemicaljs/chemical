@@ -84,7 +84,7 @@ In your project create a folder to store your static assets. Create an index.htm
 If you want to set the wisp server to an external server just change the `wisp` attribute.
 
 ```html
-<script wisp="wss://wisp.mercurywork.shop" src="/chemical.js"></script>
+<script wisp="wss://wisp.mercurywork.shop/" src="/chemical.js"></script>
 ```
 
 If you want to set the transport just change the `transport` attribute. Choose `libcurl` (default becuase it supports Firefox) or `epoxy`.
@@ -122,7 +122,7 @@ window.addEventListener("chemicalLoaded", function(e) {
 4. Change the transport and Wisp URL with `chemicalTransport`
 
 ```js
-await chemicalTransport("libcurl", "wss://wisp.mercurywork.shop")
+await chemicalTransport("libcurl", "wss://wisp.mercurywork.shop/")
 ```
 
 Below is a simple example of a simple input that redirects to the encoded URL when the user presses enter. It checks if there is any input and if Chemical has loaded before loading.

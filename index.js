@@ -13,6 +13,8 @@ import createRammerhead from "rammerhead/src/server/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+logging.set_level(logging.ERROR)
+
 class ChemicalServer {
     constructor(options) {
         if (options) {
