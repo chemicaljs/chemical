@@ -175,6 +175,8 @@ export default defineConfig({
 })
 ```
 
+`hostname_whitelist` overrides `hostname_blacklist` if you try to set them both.
+
 ## Components
 Setup a proxy site with easy HTML components.
 
