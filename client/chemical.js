@@ -215,11 +215,11 @@ function getTransport(transport) {
 
 let connection;
 
-let wispURL = document.currentScript.getAttribute("wisp");
-let transport = document.currentScript.getAttribute("transport");
+let wispURL = document.currentScript.dataset.wisp;
+let transport = document.currentScript.dataset.transport;
 
-async function chemicalTransport(transport, wisp) {
-    await connection.setTransport(getTransport(transport) || "/libcurl/index.mjs", [{ wisp: wisp || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+async function chemicalTransport(newTransport = transport, wisp = wispURL) {
+    await connection.setTransport(getTransport(newTransport) || "/libcurl/index.mjs", [{ wisp: wisp || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
 }
 
 async function registerSW() {

@@ -8,12 +8,12 @@
     "build": "vite build"
   },
   "dependencies": {
-    "chemicaljs": "^1.4.8",
+    "chemicaljs": "^1.4.9",
     "express": "^4.19.2",
     "preact": "^10.22.1"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.9.0",
-    "vite": "^5.3.3"
+    "vite": "^5.3.4"
   }
 }

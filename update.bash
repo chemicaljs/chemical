@@ -1,4 +1,4 @@
-npx npm-check-updates -u && npm i
+npm i
 cd examples/example
 npx npm-check-updates -u && npm i
 cd ../../

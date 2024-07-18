@@ -9,7 +9,7 @@ A example with the vite plugin can be found in [`/example-vite/`](https://github
 
 A example with all the components can be found in [`/example-components/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-components).
 
-A real word styled example can be found in [`/example-styled/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-styled).
+A real world styled example can be found in [`/example-styled/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-styled).
 
 ### Server
 
@@ -37,6 +37,8 @@ const chemical = new ChemicalServer({
     hostname_whitelist: [ /example\.com/ ]
 });
 ```
+
+`hostname_whitelist` overrides `hostname_blacklist` if you try to set them both.
 
 3. Use `chemical.app` which is an express app. You may need to import express for certain APIs.
 
@@ -84,13 +86,13 @@ In your project create a folder to store your static assets. Create an index.htm
 If you want to set the wisp server to an external server just change the `wisp` attribute.
 
 ```html
-<script wisp="wss://wisp.mercurywork.shop/" src="/chemical.js"></script>
+<script data-wisp="wss://wisp.mercurywork.shop/" src="/chemical.js"></script>
 ```
 
 If you want to set the transport just change the `transport` attribute. Choose `libcurl` (default becuase it supports Firefox) or `epoxy`.
 
 ```html
-<script transport="epoxy" src="/chemical.js"></script>
+<script data-transport="epoxy" src="/chemical.js"></script>
 ```
 
 2. In a inline script or javascript file, encode a URL with Chemical using the async function `window.chemicalEncode`.
@@ -174,8 +176,6 @@ export default defineConfig({
     ],
 })
 ```
-
-`hostname_whitelist` overrides `hostname_blacklist` if you try to set them both.
 
 ## Components
 Setup a proxy site with easy HTML components.
