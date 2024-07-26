@@ -250,5 +250,14 @@ Set the second parameter of `chemicalAction` to the `id` of the iframe.
 <iframe controls="my-controls-2" id="my-iframe-2" is="chemical-iframe"></iframe>
 ```
 
+## Future Additions
+
+- Link chemical component
+- Automatically add https:// if needed
+- Search engine option for search
+- Easy tab cloaking
+- Easy about:blank
+- Proxy switcher/searchengine switcher/cloak switcher
+
 ## License
 Chemical Uses the MIT license.
