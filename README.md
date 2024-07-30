@@ -51,10 +51,10 @@ chemical.app.get("/", function(req, res){
 });
 ```
 
-4. Use `chemical.server` and listen on a port of your choosing.
+4. Use `chemical.listen` on a port of your choosing.
 
 ```js
-chemical.server.listen(3000);
+chemical.listen(3000);
 ```
 
 Below is an example of a simple backend. This example will setup Chemical and serve the "public" folder along with the `index.html` file as `/` and `.html` files without the extension.
@@ -71,7 +71,7 @@ chemical.app.use(express.static("public", {
     extensions: ["html"]
 }));
 
-chemical.server.listen(port, () => {
+chemical.listen(port, () => {
     console.log(`Chemical demo listening on port ${port}`);
 });
 ```

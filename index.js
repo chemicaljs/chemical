@@ -38,6 +38,13 @@ class ChemicalServer {
             options.rammerhead = true;
         }
 
+        this.options = options;
+
+        this.app = express();
+    }
+    listen(port, callback) {
+        const server = createServer();
+
         const rh = createRammerhead()
 
         const rammerheadScopes = [
@@ -75,14 +82,12 @@ class ChemicalServer {
             rh.emit("upgrade", req, socket, head)
         }
 
-        this.server = createServer();
-        this.app = express();
-        this.app.get("/chemical.js", async function (req, res) {
+        this.app.get("/chemical.js", async (req, res) => {
             let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
 
-            if (options.default) {
-                if (["uv", "rammerhead", "scramjet"].includes(options.default)) {
-                    chemicalMain = `const defaultService = "${options.default}";\n\n` + chemicalMain
+            if (this.options.default) {
+                if (["uv", "rammerhead", "scramjet"].includes(this.options.default)) {
+                    chemicalMain = `const defaultService = "${this.options.default}";\n\n` + chemicalMain
                 } else {
                     chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain
                     console.error("Error: Chemical default option invalid.")
@@ -91,19 +96,19 @@ class ChemicalServer {
                 chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain;
             }
 
-            chemicalMain = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain
-            chemicalMain = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalMain
-            chemicalMain = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalMain
+            chemicalMain = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain
+            chemicalMain = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalMain
+            chemicalMain = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalMain
 
             res.type("application/javascript");
             return res.send(chemicalMain);
         });
-        this.app.get("/chemical.sw.js", async function (req, res) {
+        this.app.get("/chemical.sw.js", async (req, res) => {
             let chemicalSW = await readFileSync(resolve(__dirname, "client/chemical.sw.js"), "utf8");
 
-            chemicalSW = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW
-            chemicalSW = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalSW
-            chemicalSW = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalSW
+            chemicalSW = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW
+            chemicalSW = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalSW
+            chemicalSW = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalSW
 
             res.type("application/javascript");
             return res.send(chemicalSW);
@@ -112,36 +117,38 @@ class ChemicalServer {
         this.app.use("/baremux/", express.static(baremuxPath));
         this.app.use("/libcurl/", express.static(libcurlPath));
         this.app.use("/epoxy/", express.static(epoxyPath));
-        if (options.uv) {
+        if (this.options.uv) {
             this.app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
             this.app.use("/uv/", express.static(uvPath));
         }
-        if (options.scramjet) {
+        if (this.options.scramjet) {
             this.app.use("/scramjet/", express.static(resolve(__dirname, "config/scramjet")));
             this.app.use("/scramjet/", express.static(scramjetPath));
         }
-        this.server.on("request", (req, res) => {
-            if (options.rammerhead && shouldRouteRh(req)) {
+        server.on("request", (req, res) => {
+            if (this.options.rammerhead && shouldRouteRh(req)) {
                 routeRhRequest(req, res);
             } else {
                 this.app(req, res);
             }
         });
-        this.server.on("upgrade", (req, socket, head) => {
+        server.on("upgrade", (req, socket, head) => {
             if (req.url && req.url.endsWith("/wisp/")) {
-                if (options.hostname_blacklist) {
-                    wisp.options.hostname_blacklist = options.hostname_blacklist
+                if (this.options.hostname_blacklist) {
+                    wisp.this.options.hostname_blacklist = this.options.hostname_blacklist
                 }
-                if (options.hostname_whitelist) {
-                    wisp.options.hostname_whitelist = options.hostname_whitelist
+                if (this.options.hostname_whitelist) {
+                    wisp.this.options.hostname_whitelist = this.options.hostname_whitelist
                 }
                 wisp.routeRequest(req, socket, head);
-            } else if (options.rammerhead && shouldRouteRh(req)) {
+            } else if (this.options.rammerhead && shouldRouteRh(req)) {
                 routeRhUpgrade(req, socket, head);
             } else {
                 socket.end();
             }
         });
+
+        server.listen(port, callback)
     }
 }
 

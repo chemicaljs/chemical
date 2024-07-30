@@ -9,6 +9,6 @@ chemical.app.use(express.static("dist", {
     extensions: ["html"]
 }));
 
-chemical.server.listen(port, () => {
+chemical.listen(port, () => {
     console.log(`Chemical example vite listening on port ${port}`);
 });
