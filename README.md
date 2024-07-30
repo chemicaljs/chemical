@@ -11,6 +11,9 @@ A example with all the components can be found in [`/example-components/`](https
 
 A real world styled example can be found in [`/example-styled/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-styled).
 
+A example with a build command and an external wisp server can be found in [`/example-build/`](https://github.com/chemicaljs/chemical/tree/main/examples/example-build).
+
+
 ### Server
 
 Create a new Node.js project and create a script file for the server.
@@ -71,6 +74,42 @@ chemical.app.use(express.static("public", {
 chemical.server.listen(port, () => {
     console.log(`Chemical demo listening on port ${port}`);
 });
+```
+
+### Build
+
+Want to use Chemical without using a custom wisp and/or rammerhead server or without a server at all?
+
+Using the build command you can clone all needed assets into your build folder (like BareMux, Libcurl, and proxies enabled). Note that UV and Scramjet will need an external wisp server to function if you do not provide your own and Rammerhead will not work without your own Rammerhead server running.
+
+1. Import `ChemicalBuild` and create a new build.
+
+```js
+const build = new ChemicalBuild({
+    path: "dist",
+    default: "uv",
+    uv: true,
+    scramjet: true,
+    rammerhead: false,
+});
+```
+
+2. Use `build.write()` to write into the build path.
+
+3. Use `build.write(true)` to first empty the build path.
+
+Below if a full example of building Chemical.
+
+```js
+const build = new ChemicalBuild({
+    path: "dist",
+    default: "uv",
+    uv: true,
+    scramjet: true,
+    rammerhead: false,
+});
+
+await build.write(true);
 ```
 
 ### Client

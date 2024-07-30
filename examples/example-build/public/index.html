@@ -1,0 +1,13 @@
+<h1>Chemical Example</h1>
+<input id="search" placeholder="Enter URL">
+
+<script data-wisp="wss://wisp.mercurywork.shop/" src="/chemical.js"></script>
+<script>
+    const search = document.getElementById("search");
+
+    search.addEventListener("keydown", async function (e) {
+        if (e.key == "Enter" && window.chemicalLoaded && e.target.value) {
+            window.location = await window.chemicalEncode(e.target.value)
+        }
+    })
+</script>

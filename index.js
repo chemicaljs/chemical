@@ -1,7 +1,7 @@
 import { resolve, dirname } from "node:path";
-import { readFileSync } from "node:fs";
+import { readFileSync, cpSync, writeFileSync, copyFileSync, existsSync, mkdirSync, rmSync, readdirSync } from "node:fs";
 import { createServer } from "node:http";
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath } from "node:url";
 import express from "express";
 import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
@@ -287,4 +287,92 @@ const ChemicalVitePlugin = (options) => ({
     }
 })
 
-export { ChemicalServer, ChemicalVitePlugin };
+class ChemicalBuild {
+    constructor(options) {
+        if (options) {
+            if (typeof options !== "object" || Array.isArray(options)) {
+                options = {}
+                console.error("Error: ChemicalBuild options invalid.")
+            }
+        } else {
+            options = {}
+        }
+
+        if (options.path == undefined) {
+            options.path = "dist"
+        }
+
+        if (options.path.startsWith("/")) {
+            options.path = options.path.substring(1);
+        }
+
+        if (options.path.endsWith("/")) {
+            options.path = options.path.slice(0, -1);
+        }
+
+        if (options.uv == undefined) {
+            options.uv = true;
+        }
+
+        if (options.scramjet == undefined) {
+            options.scramjet = true;
+        }
+
+        if (options.rammerhead == undefined) {
+            options.rammerhead = true;
+        }
+
+        this.options = options;
+    }
+    async write(deletePath = false) {
+        if (!existsSync(resolve(this.options.path))) {
+            mkdirSync(resolve(this.options.path), { recursive: true });
+        } else {
+            if (deletePath) {
+                readdirSync(resolve(this.options.path)).forEach((file) => rmSync(resolve(this.options.path, file), { recursive: true }));
+            }
+        }
+
+        let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
+
+        if (this.options.default) {
+            if (["uv", "rammerhead", "scramjet"].includes(this.options.default)) {
+                chemicalMain = `const defaultService = "${this.options.default}";\n\n` + chemicalMain
+            } else {
+                chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain
+                console.error("Error: Chemical default option invalid.")
+            }
+        } else {
+            chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain;
+        }
+
+        chemicalMain = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain
+        chemicalMain = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalMain
+        chemicalMain = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalMain
+
+        writeFileSync(resolve(this.options.path, "chemical.js"), chemicalMain);
+
+        let chemicalSW = await readFileSync(resolve(__dirname, "client/chemical.sw.js"), "utf8");
+
+        chemicalSW = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW
+        chemicalSW = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalSW
+        chemicalSW = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalSW
+
+        writeFileSync(resolve(this.options.path, "chemical.sw.js"), chemicalSW);
+
+        cpSync(baremuxPath, resolve(this.options.path, "baremux"), { recursive: true });
+        cpSync(libcurlPath, resolve(this.options.path, "libcurl"), { recursive: true });
+        cpSync(epoxyPath, resolve(this.options.path, "epoxy"), { recursive: true });
+        cpSync(libcurlPath, resolve(this.options.path, "libcurl"), { recursive: true });
+        if (this.options.uv) {
+            cpSync(uvPath, resolve(this.options.path, "uv"), { recursive: true });
+            copyFileSync(resolve(__dirname, "config/uv/uv.config.js"), resolve(this.options.path, "uv/uv.config.js"));
+        }
+        if (this.options.scramjet) {
+            cpSync(scramjetPath, resolve(this.options.path, "scramjet"), { recursive: true });
+            copyFileSync(resolve(__dirname, "config/scramjet/scramjet.config.js"), resolve(this.options.path, "scramjet/scramjet.config.js"));
+        }
+    }
+}
+
+export { ChemicalServer, ChemicalBuild, ChemicalVitePlugin };

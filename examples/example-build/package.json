@@ -1,11 +1,12 @@
 {
-  "name": "chemical-example",
+  "name": "chemical-example-build",
   "version": "1.0.0",
   "description": "This is an example project for Chemical.",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
