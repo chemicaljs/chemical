@@ -43,11 +43,21 @@ const chemical = new ChemicalServer({
 
 `hostname_whitelist` overrides `hostname_blacklist` if you try to set them both.
 
-3. Use `chemical.app` which is an express app. You may need to import express for certain APIs.
+3. Use `chemical.app` which is an express app. `chemical.use` is shortand for `chemical.app.use`. You may need to import express for certain APIs.
 
 ```js
-chemical.app.get("/", function(req, res){
+chemical.get("/", function(req, res){
     res.send("Hello World");
+});
+```
+
+
+5. Chemical routes are after user routes as to not overwrite custom files. Due to this you will need to use `chemical.error` for custom error pages.
+
+```js
+chemical.error((req, res) => {
+    res.status(404);
+    res.send("404 Error");
 });
 ```
 
@@ -59,6 +69,7 @@ chemical.listen(3000);
 
 Below is an example of a simple backend. This example will setup Chemical and serve the "public" folder along with the `index.html` file as `/` and `.html` files without the extension.
 
+
 ```js
 import { ChemicalServer } from "chemicaljs";
 import express from "express";
@@ -66,10 +77,15 @@ import express from "express";
 const chemical = new ChemicalServer();
 const port = process.env.PORT || 3000;
 
-chemical.app.use(express.static("public", {
+chemical.use(express.static("public", {
     index: "index.html",
     extensions: ["html"]
 }));
+
+chemical.error((req, res) => {
+    res.status(404);
+    res.send("404 Error");
+});
 
 chemical.listen(port, () => {
     console.log(`Chemical demo listening on port ${port}`);

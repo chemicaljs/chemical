@@ -4,7 +4,7 @@ import express from "express";
 const chemical = new ChemicalServer();
 const port = process.env.PORT || 3000;
 
-chemical.app.use(express.static("dist", {
+chemical.use(express.static("dist", {
     index: "index.html",
     extensions: ["html"]
 }));

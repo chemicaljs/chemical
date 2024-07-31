@@ -6,7 +6,7 @@ const chemical = new ChemicalServer({
 });
 const port = process.env.PORT || 3000;
 
-chemical.app.use(express.static("public", {
+chemical.use(express.static("public", {
     index: "index.html",
     extensions: ["html"]
 }));

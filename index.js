@@ -41,6 +41,18 @@ class ChemicalServer {
         this.options = options;
 
         this.app = express();
+        this.use = this.app.use.bind(this.app);
+        this.errorFunctions = [];
+
+        this.error = (newErrorFunction) => {
+            if (newErrorFunction) {
+                if (typeof newErrorFunction == "function") {
+                    this.errorFunctions.push(newErrorFunction);
+                } else {
+                    console.error("Error: Invalid type for Chemical error function.")
+                }
+            }
+        }
     }
     listen(port, callback) {
         const server = createServer();
@@ -147,6 +159,14 @@ class ChemicalServer {
                 socket.end();
             }
         });
+
+        if (this.errorFunctions.length) {
+            this.app.use((req, res) => {
+                for (let errorFunction of this.errorFunctions) {
+                    errorFunction(req, res);
+                }
+            });
+        }
 
         server.listen(port, callback)
     }
