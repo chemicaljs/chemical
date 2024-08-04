@@ -330,4 +330,4 @@ Set the second parameter of `chemicalAction` to the `id` of the iframe.
 - Proxy switcher/searchengine switcher/cloak switcher
 
 ## License
-Chemical Uses the MIT license.
+Chemical uses the AGPL 3.0 license.
