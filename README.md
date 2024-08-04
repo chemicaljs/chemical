@@ -244,6 +244,22 @@ Setup a proxy site with easy HTML components.
 
 2. Now add any component to your site!
 
+### Link
+
+An anchor link but it automatically encodes the URL.
+
+```html
+<a href="https://example.com" is="chemical-link">Link</a>
+```
+
+You can style the link as chemical is loading.
+
+```css
+a[data-chemical-loading="true"] {
+    cursor: wait;
+}
+```
+
 ### Basic Input
 
 Opens in the current tab when the enter key is pressed.
@@ -307,7 +323,6 @@ Set the second parameter of `chemicalAction` to the `id` of the iframe.
 
 ## Future Additions
 
-- Link chemical component
 - Automatically add https:// if needed
 - Search engine option for search
 - Easy tab cloaking

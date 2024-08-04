@@ -1,5 +1,17 @@
 <h1>Chemical Example</h1>
 
+<p>Open on click</p>
+<a href="https://example.com" is="chemical-link">Example Link</a>
+<style>
+    a {
+        color: blue;
+        text-decoration: underline;
+    }
+
+    a[data-chemical-loading="true"] {
+        cursor: wait;
+    }
+</style>
 <p>Open in current tab</p>
 <input target="_self" placeholder="Enter URL" is="chemical-input">
 <p>Open in new tab</p>

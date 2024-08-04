@@ -89,10 +89,32 @@ class ChemicalControls extends HTMLElement {
     }
 }
 
+class ChemicalLink extends HTMLAnchorElement {
+    constructor() {
+        super();
+    }
+    async connectedCallback() {
+        let href = this.getAttribute("href");
+        this.removeAttribute("href");
+        this.dataset.chemicalLoading = "true";
+
+        if (window.chemicalLoaded) {
+            this.setAttribute("href", await chemicalEncode(href))
+            this.dataset.chemicalLoading = "false";
+        } else {
+            window.addEventListener("chemicalLoaded", async () => {
+                this.setAttribute("href", await chemicalEncode(href))
+                this.dataset.chemicalLoading = "false";
+            })
+        }
+    }
+}
+
 customElements.define("chemical-input", ChemicalInput, { extends: "input" });
 customElements.define("chemical-button", ChemicalButton, { extends: "button" });
 customElements.define("chemical-iframe", ChemicalIFrame, { extends: "iframe" });
 customElements.define("chemical-controls", ChemicalControls, { extends: "section" });
+customElements.define("chemical-link", ChemicalLink, { extends: "a" });
 
 function chemicalAction(action, frameID) {
     let frame = document.getElementById(frameID)
