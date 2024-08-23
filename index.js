@@ -42,6 +42,7 @@ class ChemicalServer {
 
         this.app = express();
         this.use = this.app.use.bind(this.app);
+        this.get = this.app.get.bind(this.app);
         this.errorFunctions = [];
 
         this.error = (newErrorFunction) => {

@@ -43,7 +43,7 @@ const chemical = new ChemicalServer({
 
 `hostname_whitelist` overrides `hostname_blacklist` if you try to set them both.
 
-3. Use `chemical.app` which is an express app. `chemical.use` is shortand for `chemical.app.use`. You may need to import express for certain APIs.
+3. Use `chemical.app` which is an express app. `chemical.use` is shortand for `chemical.app.use` (same with `chemical.get`). You may need to import express for certain APIs.
 
 ```js
 chemical.get("/", function(req, res){
