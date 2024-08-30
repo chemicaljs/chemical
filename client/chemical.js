@@ -1,4 +1,8 @@
-window.chemicalLoaded = false;
+window.chemical = {
+    loaded: false,
+    transport: document.currentScript.dataset.transport || "libcurl",
+    wisp: document.currentScript.dataset.wisp || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/"
+}
 
 function rammerheadEncode(baseUrl) {
     const mod = (n, m) => ((n % m) + m) % m
@@ -174,7 +178,7 @@ function rammerheadEncode(baseUrl) {
     })
 }
 
-async function chemicalEncode(url, service = defaultService) {
+async function encodeService(url, service) {
     switch (service) {
         case "uv":
             if (uvEnabled) {
@@ -193,7 +197,7 @@ async function chemicalEncode(url, service = defaultService) {
         case "scramjet":
             if (scramjetEnabled) {
                 return (
-                    window.location.origin +
+                    "https://proxysite.com" +
                     window.__scramjet$config.prefix +
                     window.__scramjet$config.codec.encode(url)
                 );
@@ -202,8 +206,28 @@ async function chemicalEncode(url, service = defaultService) {
     }
 }
 
+window.chemical.encode = async function (url, config) {
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
+        config = {
+            service: defaultService,
+            autoHttps: false
+        }
+    }
+
+    if (url.match(/^https?:\/\//)) {
+        return await encodeService(url, config.service);
+    } else if (config.autoHttps == true && (url.includes(".") && !url.includes(" "))) {
+        return await encodeService("https://" + url, config.service);
+    } else if (config.searchEngine) {
+        return await encodeService(config.searchEngine.replace("%s", encodeURIComponent(url)), config.service);
+    } else {
+        return await encodeService(url, config.service);
+    }
+}
+
 function getTransport(transport) {
     switch (transport) {
+        default:
         case "libcurl":
             return "/libcurl/index.mjs"
             break;
@@ -213,19 +237,17 @@ function getTransport(transport) {
     }
 }
 
-let connection;
+window.chemical.setTransport = async function (newTransport = window.chemical.transport) {
+    await window.chemical.connection.setTransport(getTransport(newTransport), [{ wisp: window.chemical.wisp }]);
+    window.chemical.transport = newTransport;
+}
 
-let wispURL = document.currentScript.dataset.wisp;
-let transport = document.currentScript.dataset.transport;
-
-async function chemicalTransport(newTransport = transport, wisp = wispURL) {
-    await connection.setTransport(getTransport(newTransport) || "/libcurl/index.mjs", [{ wisp: wisp || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/" }]);
+window.chemical.setWisp = async function (wisp = window.chemical.wisp) {
+    await window.chemical.connection.setTransport(getTransport(window.chemical.transport), [{ wisp: wisp }]);
+    window.chemical.wisp = wisp;
 }
 
 async function registerSW() {
-    connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
-    await chemicalTransport();
-
     if ("serviceWorker" in navigator) {
         await navigator.serviceWorker.register("/chemical.sw.js");
     } else {
@@ -247,6 +269,28 @@ async function loadScript(src) {
     });
 }
 
+function setupFetch() {
+    const client = new window.BareMux.BareClient();
+    window.chemical.fetch = client.fetch.bind(client);
+
+    window.chemical.getSuggestions = async function (query) {
+        if (!query) {
+            return [];
+        }
+
+        try {
+            const DDGSuggestions = await window.chemical.fetch(
+                "https://duckduckgo.com/ac/?q=" + query + "&type=list"
+            );
+            const suggestions = await DDGSuggestions.json();
+            return suggestions[1].slice(0, 9);
+        } catch (err) {
+            console.error(err);
+            return [];
+        }
+    }
+}
+
 (async () => {
     await loadScript("/baremux/index.js");
     if (uvEnabled) {
@@ -257,7 +301,10 @@ async function loadScript(src) {
         await loadScript("/scramjet/scramjet.codecs.js");
         await loadScript("/scramjet/scramjet.config.js");
     }
+    window.chemical.connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
+    await window.chemical.setTransport();
+    setupFetch();
     await registerSW();
-    chemicalLoaded = true;
+    window.chemical.loaded = true;
     window.dispatchEvent(new Event("chemicalLoaded"));
 })();

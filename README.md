@@ -1,6 +1,9 @@
 # Chemical
 Easily create your own web proxy with no experience required.
 
+> [!IMPORTANT]  
+> I am in the process of creating a documentation site. These docs might be outdated.
+
 ## Setup
 
 A simple example can be found in [`/example/`](https://github.com/chemicaljs/chemical/tree/main/examples/example).
@@ -25,13 +28,13 @@ Create a new Node.js project and create a script file for the server.
 ```js
 import { ChemicalServer } from "chemicaljs";
 
-const chemical = new ChemicalServer();
+const [app, listen] = new ChemicalServer();
 ```
 
 You can pass options to disable proxy services and set the default service.
 
 ```js
-const chemical = new ChemicalServer({
+const [app, listen] = new ChemicalServer({
     default: "rammerhead",
     uv: true,
     scramjet: false,
@@ -43,7 +46,7 @@ const chemical = new ChemicalServer({
 
 `hostname_whitelist` overrides `hostname_blacklist` if you try to set them both.
 
-3. Use `chemical.app` which is an express app. `chemical.use` is shortand for `chemical.app.use` (same with `chemical.get`). You may need to import express for certain APIs.
+3. Use `app` which is an express app. You may need to import express for certain APIs.
 
 ```js
 chemical.get("/", function(req, res){
@@ -51,20 +54,21 @@ chemical.get("/", function(req, res){
 });
 ```
 
+4. Use `app.serveChemical()` to serve Chemical routes.
 
-5. Chemical routes are after user routes as to not overwrite custom files. Due to this you will need to use `chemical.error` for custom error pages.
+5. Use `serveChemical` after main routes but before 404 routes. Example 404 page.
 
 ```js
-chemical.error((req, res) => {
+app.use((req, res) => {
     res.status(404);
     res.send("404 Error");
 });
 ```
 
-4. Use `chemical.listen` on a port of your choosing.
+4. Use `listen` on a port of your choosing.
 
 ```js
-chemical.listen(3000);
+listen(3000);
 ```
 
 Below is an example of a simple backend. This example will setup Chemical and serve the "public" folder along with the `index.html` file as `/` and `.html` files without the extension.
@@ -74,20 +78,22 @@ Below is an example of a simple backend. This example will setup Chemical and se
 import { ChemicalServer } from "chemicaljs";
 import express from "express";
 
-const chemical = new ChemicalServer();
+const [app, listen] = new ChemicalServer();
 const port = process.env.PORT || 3000;
 
-chemical.use(express.static("public", {
+app.use(express.static("public", {
     index: "index.html",
     extensions: ["html"]
 }));
 
-chemical.error((req, res) => {
+app.serveChemical();
+
+app.use((req, res) => {
     res.status(404);
     res.send("404 Error");
 });
 
-chemical.listen(port, () => {
+listen(port, () => {
     console.log(`Chemical demo listening on port ${port}`);
 });
 ```
@@ -150,22 +156,40 @@ If you want to set the transport just change the `transport` attribute. Choose `
 <script data-transport="epoxy" src="/chemical.js"></script>
 ```
 
-2. In a inline script or javascript file, encode a URL with Chemical using the async function `window.chemicalEncode`.
+2. In a inline script or javascript file, encode a URL with Chemical using the async function `chemical.encode`.
 
 ```js
-await window.chemicalEncode("https://example.com")
+await chemical.encode("https://example.com")
 ```
 
 Optional: Change service to `uv`, `scramjet`, or `rammerhead`. Defaults to `uv` or server option.
 
 ```js
-await window.chemicalEncode("https://example.com", "rammerhead")
+await chemical.encode("https://example.com", {
+    service: "rammerhead"
+})
 ```
 
-3. You may want to check if Chemical has loaded before encoding a URL.
+4. Set `autoHttps` to make `example.com` > `https://example.com`
 
 ```js
-if (window.chemicalLoaded) {
+await chemical.encode("example.com", {
+    autoHttps: true
+})
+```
+
+5. Use a search engine with the `searchEngine` property. Use a search engine URL with "%s" in place of query.
+
+```js
+await chemical.encode("cheese", {
+    searchEngine: "https://www.google.com/search?q=%s"
+})
+```
+
+6. You may want to check if Chemical has loaded before encoding a URL.
+
+```js
+if (window.chemical.loaded) {
     //Chemical is loaded
 }
 ```
@@ -176,10 +200,16 @@ window.addEventListener("chemicalLoaded", function(e) {
 });
 ```
 
-4. Change the transport and Wisp URL with `chemicalTransport`
+7. Change the transport with `chemical.setTransport`
 
 ```js
-await chemicalTransport("libcurl", "wss://wisp.mercurywork.shop/")
+await chemical.setTransport("libcurl") //libcurl or epoxy
+```
+
+8. Change the Wisp URL with `chemical.setWisp`
+
+```js
+await chemical.setWisp("wss://wisp.mercurywork.shop/")
 ```
 
 Below is a simple example of a simple input that redirects to the encoded URL when the user presses enter. It checks if there is any input and if Chemical has loaded before loading.
@@ -193,8 +223,8 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
     const search = document.getElementById("search");
 
     search.addEventListener("keydown", async function (e) {
-        if (e.key == "Enter" && window.chemicalLoaded && e.target.value) {
-            window.location = await window.chemicalEncode(e.target.value)
+        if (e.key == "Enter" && chemical.loaded && e.target.value) {
+            window.location = await chemical.encode(e.target.value)
         }
     })
 </script>
@@ -320,14 +350,6 @@ Set the second parameter of `chemicalAction` to the `id` of the iframe.
 </section>
 <iframe controls="my-controls-2" id="my-iframe-2" is="chemical-iframe"></iframe>
 ```
-
-## Future Additions
-
-- Automatically add https:// if needed
-- Search engine option for search
-- Easy tab cloaking
-- Easy about:blank
-- Proxy switcher/searchengine switcher/cloak switcher
 
 ## License
 Chemical uses the AGPL 3.0 license.

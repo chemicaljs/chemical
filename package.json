@@ -1,6 +1,6 @@
 {
     "name": "chemicaljs",
-    "version": "1.6.7",
+    "version": "1.7.0",
     "description": "Easily create your own web proxy with no experience required.",
     "repository": {
         "type": "git",

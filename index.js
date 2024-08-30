@@ -39,25 +39,13 @@ class ChemicalServer {
         }
 
         this.options = options;
-
+        this.server = createServer();
         this.app = express();
-        this.use = this.app.use.bind(this.app);
-        this.get = this.app.get.bind(this.app);
-        this.errorFunctions = [];
+        this.app.serveChemical = this.serveChemical;
 
-        this.error = (newErrorFunction) => {
-            if (newErrorFunction) {
-                if (typeof newErrorFunction == "function") {
-                    this.errorFunctions.push(newErrorFunction);
-                } else {
-                    console.error("Error: Invalid type for Chemical error function.")
-                }
-            }
-        }
+        return [this.app, this.listen]
     }
-    listen(port, callback) {
-        const server = createServer();
-
+    serveChemical = () => {
         const rh = createRammerhead()
 
         const rammerheadScopes = [
@@ -138,14 +126,14 @@ class ChemicalServer {
             this.app.use("/scramjet/", express.static(resolve(__dirname, "config/scramjet")));
             this.app.use("/scramjet/", express.static(scramjetPath));
         }
-        server.on("request", (req, res) => {
+        this.server.on("request", (req, res) => {
             if (this.options.rammerhead && shouldRouteRh(req)) {
                 routeRhRequest(req, res);
             } else {
                 this.app(req, res);
             }
         });
-        server.on("upgrade", (req, socket, head) => {
+        this.server.on("upgrade", (req, socket, head) => {
             if (req.url && req.url.endsWith("/wisp/")) {
                 if (this.options.hostname_blacklist) {
                     wisp.this.options.hostname_blacklist = this.options.hostname_blacklist
@@ -160,16 +148,9 @@ class ChemicalServer {
                 socket.end();
             }
         });
-
-        if (this.errorFunctions.length) {
-            this.app.use((req, res) => {
-                for (let errorFunction of this.errorFunctions) {
-                    errorFunction(req, res);
-                }
-            });
-        }
-
-        server.listen(port, callback)
+    }
+    listen = (port, callback) => {
+        this.server.listen(port, callback)
     }
 }
 

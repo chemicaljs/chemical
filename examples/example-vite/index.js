@@ -1,14 +1,16 @@
 import { ChemicalServer } from "chemicaljs";
 import express from "express";
 
-const chemical = new ChemicalServer();
+const [app, listen] = new ChemicalServer();
 const port = process.env.PORT || 3000;
 
-chemical.use(express.static("dist", {
+app.use(express.static("dist", {
     index: "index.html",
     extensions: ["html"]
 }));
 
-chemical.listen(port, () => {
+app.serveChemical();
+
+listen(port, () => {
     console.log(`Chemical example vite listening on port ${port}`);
 });
