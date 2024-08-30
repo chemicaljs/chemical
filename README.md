@@ -170,6 +170,13 @@ await chemical.encode("https://example.com", {
 })
 ```
 
+3. To decode a URL use `chemical.decode`
+
+```js
+const encodedURL = await chemical.encode("https://example.com")
+const decodedURL = await chemical.decode(encodedURL)
+```
+
 4. Set `autoHttps` to make `example.com` > `https://example.com`
 
 ```js

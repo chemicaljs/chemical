@@ -4,178 +4,192 @@ window.chemical = {
     wisp: document.currentScript.dataset.wisp || (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/"
 }
 
-function rammerheadEncode(baseUrl) {
-    const mod = (n, m) => ((n % m) + m) % m
+function rammerheadEncode(baseUrl, decode = false) {
+    const mod = (n, m) => ((n % m) + m) % m;
     const baseDictionary =
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~-"
-    const shuffledIndicator = "_rhs"
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~-";
+    const shuffledIndicator = "_rhs";
+
     const generateDictionary = function () {
-        let str = ""
-        const split = baseDictionary.split("")
+        let str = "";
+        const split = baseDictionary.split("");
         while (split.length > 0) {
-            str += split.splice(Math.floor(Math.random() * split.length), 1)[0]
+            str += split.splice(Math.floor(Math.random() * split.length), 1)[0];
         }
-        return str
-    }
+        return str;
+    };
+
     class StrShuffler {
         constructor(dictionary = generateDictionary()) {
-            this.dictionary = dictionary
+            this.dictionary = dictionary;
         }
+
         shuffle(str) {
             if (str.startsWith(shuffledIndicator)) {
-                return str
+                return str;
             }
-            let shuffledStr = ""
+            let shuffledStr = "";
             for (let i = 0; i < str.length; i++) {
-                const char = str.charAt(i)
-                const idx = baseDictionary.indexOf(char)
+                const char = str.charAt(i);
+                const idx = baseDictionary.indexOf(char);
                 if (char === "%" && str.length - i >= 3) {
-                    shuffledStr += char
-                    shuffledStr += str.charAt(++i)
-                    shuffledStr += str.charAt(++i)
+                    shuffledStr += char;
+                    shuffledStr += str.charAt(++i);
+                    shuffledStr += str.charAt(++i);
                 } else if (idx === -1) {
-                    shuffledStr += char
+                    shuffledStr += char;
                 } else {
                     shuffledStr += this.dictionary.charAt(
                         mod(idx + i, baseDictionary.length)
-                    )
+                    );
                 }
             }
-            return shuffledIndicator + shuffledStr
+            return shuffledIndicator + shuffledStr;
         }
+
         unshuffle(str) {
             if (!str.startsWith(shuffledIndicator)) {
-                return str
+                return str;
             }
 
-            str = str.slice(shuffledIndicator.length)
+            str = str.slice(shuffledIndicator.length);
 
-            let unshuffledStr = ""
+            let unshuffledStr = "";
             for (let i = 0; i < str.length; i++) {
-                const char = str.charAt(i)
-                const idx = this.dictionary.indexOf(char)
+                const char = str.charAt(i);
+                const idx = this.dictionary.indexOf(char);
                 if (char === "%" && str.length - i >= 3) {
-                    unshuffledStr += char
-                    unshuffledStr += str.charAt(++i)
-                    unshuffledStr += str.charAt(++i)
+                    unshuffledStr += char;
+                    unshuffledStr += str.charAt(++i);
+                    unshuffledStr += str.charAt(++i);
                 } else if (idx === -1) {
-                    unshuffledStr += char
+                    unshuffledStr += char;
                 } else {
                     unshuffledStr += baseDictionary.charAt(
                         mod(idx - i, baseDictionary.length)
-                    )
+                    );
                 }
             }
-            return unshuffledStr
+            return unshuffledStr;
         }
     }
+
     function get(url, callback, shush = false) {
-        var request = new XMLHttpRequest()
-        request.open("GET", url, true)
-        request.send()
+        var request = new XMLHttpRequest();
+        request.open("GET", url, true);
+        request.send();
 
         request.onerror = function () {
-            if (!shush) console.log("Cannot communicate with the server")
-        }
+            if (!shush) console.log("Cannot communicate with the server");
+        };
         request.onload = function () {
             if (request.status === 200) {
-                callback(request.responseText)
+                callback(request.responseText);
             } else {
                 if (!shush)
                     console.log(
                         'unexpected server response to not match "200". Server says "' +
                         request.responseText +
                         '"'
-                    )
+                    );
             }
-        }
+        };
     }
+
     var api = {
         newsession(callback) {
-            get("/newsession", callback)
+            get("/newsession", callback);
         },
         sessionexists(id, callback) {
             get("/sessionexists?id=" + encodeURIComponent(id), function (res) {
-                if (res === "exists") return callback(true)
-                if (res === "not found") return callback(false)
-                console.log("unexpected response from server. received" + res)
-            })
+                if (res === "exists") return callback(true);
+                if (res === "not found") return callback(false);
+                console.log("unexpected response from server. received" + res);
+            });
         },
         shuffleDict(id, callback) {
-            console.log("Shuffling", id)
+            console.log("Shuffling", id);
             get("/api/shuffleDict?id=" + encodeURIComponent(id), function (res) {
-                callback(JSON.parse(res))
-            })
+                callback(JSON.parse(res));
+            });
         }
-    }
-    var localStorageKey = "rammerhead_sessionids"
-    var localStorageKeyDefault = "rammerhead_default_sessionid"
+    };
+
+    var localStorageKey = "rammerhead_sessionids";
+    var localStorageKeyDefault = "rammerhead_default_sessionid";
     var sessionIdsStore = {
         get() {
-            var rawData = localStorage.getItem(localStorageKey)
-            if (!rawData) return []
+            var rawData = localStorage.getItem(localStorageKey);
+            if (!rawData) return [];
             try {
-                var data = JSON.parse(rawData)
-                if (!Array.isArray(data)) throw "getout"
-                return data
+                var data = JSON.parse(rawData);
+                if (!Array.isArray(data)) throw "getout";
+                return data;
             } catch (e) {
-                return []
+                return [];
             }
         },
         set(data) {
-            if (!data || !Array.isArray(data)) throw new TypeError("must be array")
-            localStorage.setItem(localStorageKey, JSON.stringify(data))
+            if (!data || !Array.isArray(data)) throw new TypeError("must be array");
+            localStorage.setItem(localStorageKey, JSON.stringify(data));
         },
         getDefault() {
-            var sessionId = localStorage.getItem(localStorageKeyDefault)
+            var sessionId = localStorage.getItem(localStorageKeyDefault);
             if (sessionId) {
-                var data = sessionIdsStore.get()
+                var data = sessionIdsStore.get();
                 data.filter(function (e) {
-                    return e.id === sessionId
-                })
-                if (data.length) return data[0]
+                    return e.id === sessionId;
+                });
+                if (data.length) return data[0];
             }
-            return null
+            return null;
         },
         setDefault(id) {
-            localStorage.setItem(localStorageKeyDefault, id)
+            localStorage.setItem(localStorageKeyDefault, id);
         }
-    }
+    };
+
     function addSession(id) {
-        var data = sessionIdsStore.get()
-        data.unshift({ id: id, createdOn: new Date().toLocaleString() })
-        sessionIdsStore.set(data)
+        var data = sessionIdsStore.get();
+        data.unshift({ id: id, createdOn: new Date().toLocaleString() });
+        sessionIdsStore.set(data);
     }
+
     function getSessionId() {
         return new Promise(resolve => {
-            var id = localStorage.getItem("session-string")
+            var id = localStorage.getItem("session-string");
             api.sessionexists(id, function (value) {
                 if (!value) {
-                    console.log("Session validation failed")
+                    console.log("Session validation failed");
                     api.newsession(function (id) {
-                        addSession(id)
-                        localStorage.setItem("session-string", id)
-                        console.log(id)
-                        console.log("^ new id")
-                        resolve(id)
-                    })
+                        addSession(id);
+                        localStorage.setItem("session-string", id);
+                        console.log(id);
+                        console.log("^ new id");
+                        resolve(id);
+                    });
                 } else {
-                    resolve(id)
+                    resolve(id);
                 }
-            })
-        })
+            });
+        });
     }
-    var ProxyHref
+
+    var ProxyHref;
 
     return getSessionId().then(id => {
         return new Promise(resolve => {
             api.shuffleDict(id, function (shuffleDict) {
-                var shuffler = new StrShuffler(shuffleDict)
-                ProxyHref = "/" + id + "/" + shuffler.shuffle(baseUrl)
-                resolve(ProxyHref)
-            })
-        })
-    })
+                var shuffler = new StrShuffler(shuffleDict);
+                if (decode) {
+                    ProxyHref = shuffler.unshuffle(baseUrl.split(id + "/")[1]);
+                } else {
+                    ProxyHref = "/" + id + "/" + shuffler.shuffle(baseUrl);
+                }
+                resolve(ProxyHref);
+            });
+        });
+    });
 }
 
 async function encodeService(url, service) {
@@ -222,6 +236,32 @@ window.chemical.encode = async function (url, config) {
         return await encodeService(config.searchEngine.replace("%s", encodeURIComponent(url)), config.service);
     } else {
         return await encodeService(url, config.service);
+    }
+}
+
+window.chemical.decode = async function (url, config) {
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
+        config = {
+            service: defaultService,
+        }
+    }
+
+    switch (config.service) {
+        case "uv":
+            if (uvEnabled) {
+                return __uv$config.decodeUrl(url.split(__uv$config.prefix)[1]);
+            }
+            break;
+        case "rammerhead":
+            if (rammerheadEnabled) {
+                return await rammerheadEncode(url.split(window.location.origin)[1], true);
+            }
+            break;
+        case "scramjet":
+            if (scramjetEnabled) {
+                return __scramjet$config.codec.decode(url.split(__scramjet$config.prefix)[1]);
+            }
+            break;
     }
 }
 
@@ -291,20 +331,18 @@ function setupFetch() {
     }
 }
 
-(async () => {
-    await loadScript("/baremux/index.js");
-    if (uvEnabled) {
-        await loadScript("/uv/uv.bundle.js");
-        await loadScript("/uv/uv.config.js");
-    }
-    if (scramjetEnabled) {
-        await loadScript("/scramjet/scramjet.codecs.js");
-        await loadScript("/scramjet/scramjet.config.js");
-    }
-    window.chemical.connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
-    await window.chemical.setTransport();
-    setupFetch();
-    await registerSW();
-    window.chemical.loaded = true;
-    window.dispatchEvent(new Event("chemicalLoaded"));
-})();
+await loadScript("/baremux/index.js");
+if (uvEnabled) {
+    await loadScript("/uv/uv.bundle.js");
+    await loadScript("/uv/uv.config.js");
+}
+if (scramjetEnabled) {
+    await loadScript("/scramjet/scramjet.codecs.js");
+    await loadScript("/scramjet/scramjet.config.js");
+}
+window.chemical.connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
+await window.chemical.setTransport();
+setupFetch();
+await registerSW();
+window.chemical.loaded = true;
+window.dispatchEvent(new Event("chemicalLoaded"));

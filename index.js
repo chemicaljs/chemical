@@ -9,8 +9,7 @@ import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
-import createRammerhead from "rammerhead/src/server/index.js";
-
+import { createRammerhead, shouldRouteRh, routeRhUpgrade, routeRhRequest } from "@rubynetwork/rammerhead";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 logging.set_level(logging.ERROR)
@@ -46,42 +45,9 @@ class ChemicalServer {
         return [this.app, this.listen]
     }
     serveChemical = () => {
-        const rh = createRammerhead()
-
-        const rammerheadScopes = [
-            "/rammerhead.js",
-            "/hammerhead.js",
-            "/transport-worker.js",
-            "/task.js",
-            "/iframe-task.js",
-            "/worker-hammerhead.js",
-            "/messaging",
-            "/sessionexists",
-            "/deletesession",
-            "/newsession",
-            "/editsession",
-            "/needpassword",
-            "/syncLocalStorage",
-            "/api/shuffleDict"
-        ]
-
-        const rammerheadSession = /^\/[a-z0-9]{32}/
-
-        const shouldRouteRh = req => {
-            const url = new URL(req.url, "http://0.0.0.0")
-            return (
-                rammerheadScopes.includes(url.pathname) ||
-                rammerheadSession.test(url.pathname)
-            )
-        }
-
-        const routeRhRequest = (req, res) => {
-            rh.emit("request", req, res)
-        }
-
-        const routeRhUpgrade = (req, socket, head) => {
-            rh.emit("upgrade", req, socket, head)
-        }
+        const rh = createRammerhead({
+            logLevel: "error",
+        });
 
         this.app.get("/chemical.js", async (req, res) => {
             let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
@@ -100,6 +66,8 @@ class ChemicalServer {
             chemicalMain = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain
             chemicalMain = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalMain
             chemicalMain = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalMain
+
+            chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
             res.type("application/javascript");
             return res.send(chemicalMain);
@@ -128,7 +96,7 @@ class ChemicalServer {
         }
         this.server.on("request", (req, res) => {
             if (this.options.rammerhead && shouldRouteRh(req)) {
-                routeRhRequest(req, res);
+                routeRhRequest(rh, req, res);
             } else {
                 this.app(req, res);
             }
@@ -143,7 +111,7 @@ class ChemicalServer {
                 }
                 wisp.routeRequest(req, socket, head);
             } else if (this.options.rammerhead && shouldRouteRh(req)) {
-                routeRhUpgrade(req, socket, head);
+                routeRhUpgrade(rh, req, socket, head);
             } else {
                 socket.end();
             }
@@ -178,42 +146,9 @@ const ChemicalVitePlugin = (options) => ({
             options.rammerhead = true;
         }
 
-        const rh = createRammerhead()
-
-        const rammerheadScopes = [
-            "/rammerhead.js",
-            "/hammerhead.js",
-            "/transport-worker.js",
-            "/task.js",
-            "/iframe-task.js",
-            "/worker-hammerhead.js",
-            "/messaging",
-            "/sessionexists",
-            "/deletesession",
-            "/newsession",
-            "/editsession",
-            "/needpassword",
-            "/syncLocalStorage",
-            "/api/shuffleDict"
-        ]
-
-        const rammerheadSession = /^\/[a-z0-9]{32}/
-
-        const shouldRouteRh = req => {
-            const url = new URL(req.url, "http://0.0.0.0")
-            return (
-                rammerheadScopes.includes(url.pathname) ||
-                rammerheadSession.test(url.pathname)
-            )
-        }
-
-        const routeRhRequest = (req, res) => {
-            rh.emit("request", req, res)
-        }
-
-        const routeRhUpgrade = (req, socket, head) => {
-            rh.emit("upgrade", req, socket, head)
-        }
+        const rh = createRammerhead({
+            logLevel: "error"
+        })
 
         const app = express();
         app.get("/chemical.js", async function (req, res) {
@@ -233,6 +168,8 @@ const ChemicalVitePlugin = (options) => ({
             chemicalMain = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain
             chemicalMain = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalMain
             chemicalMain = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalMain
+
+            chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
             res.type("application/javascript");
             return res.send(chemicalMain);
@@ -264,7 +201,7 @@ const ChemicalVitePlugin = (options) => ({
 
         server.middlewares.use((req, res, next) => {
             if (options.rammerhead && shouldRouteRh(req)) {
-                routeRhRequest(req, res);
+                routeRhRequest(rh, req, res);
             } else {
                 next();
             }
@@ -286,7 +223,7 @@ const ChemicalVitePlugin = (options) => ({
                 }
                 wisp.routeRequest(req, socket, head)
             } else if (options.rammerhead && shouldRouteRh(req)) {
-                routeRhUpgrade(req, socket, head)
+                routeRhUpgrade(rh, req, socket, head)
             } else {
                 for (const upgrader of upgraders) {
                     upgrader(req, socket, head)
