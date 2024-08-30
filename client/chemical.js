@@ -197,7 +197,7 @@ async function encodeService(url, service) {
         case "scramjet":
             if (scramjetEnabled) {
                 return (
-                    "https://proxysite.com" +
+                    window.location.origin +
                     window.__scramjet$config.prefix +
                     window.__scramjet$config.codec.encode(url)
                 );

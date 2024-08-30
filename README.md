@@ -230,6 +230,14 @@ Below is a simple example of a simple input that redirects to the encoded URL wh
 </script>
 ```
 
+9. Fetch websites through Wisp using `chemical.fetch`. This works the same as the fetch API.
+
+10. Get search suggestions via DuckDuckGo using `chemical.getSuggestions`
+
+```js
+await chemical.getSuggestions("google")
+```
+
 ## Vite Plugin
 
 1. Create a new vite app and open `vite.config.js` or `vite.config.ts`

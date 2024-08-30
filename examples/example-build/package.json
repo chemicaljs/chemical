@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/chemicaljs/chemical#readme",
   "dependencies": {
-    "chemicaljs": "^1.7.0",
+    "chemicaljs": "^1.7.1",
     "express": "^4.19.2"
   }
 }
