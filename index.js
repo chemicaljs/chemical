@@ -296,6 +296,8 @@ class ChemicalBuild {
         chemicalMain = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalMain
         chemicalMain = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalMain
 
+        chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
+
         writeFileSync(resolve(this.options.path, "chemical.js"), chemicalMain);
 
         let chemicalSW = await readFileSync(resolve(__dirname, "client/chemical.sw.js"), "utf8");
