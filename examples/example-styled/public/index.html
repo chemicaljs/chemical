@@ -12,13 +12,13 @@
 <body>
     <h1>Chemical Example</h1>
     <p>Create your own using <a href="https://github.com/chemicaljs/chemical">Chemical!</a></p>
-    <input autofocus spellcheck="false" autocomplete="off" id="search" frame="web" placeholder="Enter a URL" is="chemical-input">
+    <input autofocus spellcheck="false" autocomplete="off" id="search" data-frame="web" placeholder="Enter a URL" is="chemical-input">
     <section id="controls" is="chemical-controls">
         <button onclick="chemicalAction('back', 'web')">Back</button>
         <button onclick="chemicalAction('forward', 'web')">Forward</button>
         <button onclick="chemicalAction('reload', 'web')">Reload</button>
         <button onclick="chemicalAction('close', 'web')">Close</button>
     </section>
-    <iframe id="web" controls="controls" is="chemical-iframe"></iframe>
+    <iframe id="web" data-controls="controls" is="chemical-iframe"></iframe>
 </body>
 </html>

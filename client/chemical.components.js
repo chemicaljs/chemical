@@ -4,16 +4,23 @@ class ChemicalInput extends HTMLInputElement {
     }
     connectedCallback() {
         this.addEventListener("keydown", async function (e) {
-            if (e.key == "Enter" && window.chemicalLoaded && e.target.value) {
-                let encodedURL = await window.chemicalEncode(e.target.value)
-                let action = this.getAttribute("action")
-                let target = this.getAttribute("target")
-                let frame = this.getAttribute("frame")
+            if (e.key == "Enter" && window.chemical.loaded && e.target.value) {
+                let service = this.dataset.service || "uv";
+                let autoHttps = this.dataset.autoHttps !== undefined ? true : false;
+                let searchEngine = this.dataset.searchEngine;
+                let action = this.dataset.action
+                let target = this.dataset.target
+                let frame = this.dataset.frame
+                let encodedURL = await chemical.encode(e.target.value, {
+                    service,
+                    autoHttps,
+                    searchEngine
+                })
 
                 if (frame) {
-                    let forFrame = document.getElementById(this.getAttribute("frame"))
-                    forFrame.src = encodedURL
-                    forFrame.setAttribute("open", "true")
+                    let forFrame = document.getElementById(frame)
+                    forFrame.src = encodedURL;
+                    forFrame.setAttribute("data-open", "true")
                 }
 
                 if (action) {
@@ -38,7 +45,7 @@ class ChemicalButton extends HTMLButtonElement {
     }
     connectedCallback() {
         this.addEventListener("click", function (e) {
-            let forInput = document.getElementById(this.getAttribute("for"))
+            let forInput = document.getElementById(this.dataset.for)
 
             if (forInput) {
                 forInput.dispatchEvent(new KeyboardEvent("keydown", {
@@ -50,40 +57,40 @@ class ChemicalButton extends HTMLButtonElement {
 }
 
 class ChemicalIFrame extends HTMLIFrameElement {
-    static observedAttributes = ["open"];
+    static observedAttributes = ["data-open"];
     constructor() {
         super();
     }
     connectedCallback() {
-        let open = this.getAttribute("open")
+        let open = this.dataset.open
         this.style.display = open == "true" ? "" : "none"
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name == "open") {
-            let open = this.getAttribute("open")
+        if (name == "data-open") {
+            let open = this.dataset.open
             this.style.display = open == "true" ? "" : "none"
 
-            let controls = document.getElementById(this.getAttribute("controls"))
+            let controls = document.getElementById(this.dataset.controls)
 
             if (controls) {
-                controls.setAttribute("open", open)
+                controls.dataset.open = open
             }
         }
     }
 }
 
 class ChemicalControls extends HTMLElement {
-    static observedAttributes = ["open"];
+    static observedAttributes = ["data-open"];
     constructor() {
         super();
     }
     connectedCallback() {
-        let open = this.getAttribute("open")
+        let open = this.dataset.open
         this.style.display = open == "true" ? "" : "none"
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name == "open") {
-            let open = this.getAttribute("open")
+        if (name == "data-open") {
+            let open = this.dataset.open
             this.style.display = open == "true" ? "" : "none"
         }
     }
@@ -94,16 +101,26 @@ class ChemicalLink extends HTMLAnchorElement {
         super();
     }
     async connectedCallback() {
-        let href = this.getAttribute("href");
-        this.removeAttribute("href");
+        let href = this.dataset.href;
+        let service = this.dataset.service || "uv";
+        let autoHttps = this.dataset.autoHttps !== undefined ? true : false;
+        let searchEngine = this.dataset.searchEngine;
         this.dataset.chemicalLoading = "true";
 
-        if (window.chemicalLoaded) {
-            this.setAttribute("href", await chemicalEncode(href))
+        if (window.chemical.loaded) {
+            this.setAttribute("href", await chemical.encode(href, {
+                service,
+                autoHttps,
+                searchEngine
+            }))
             this.dataset.chemicalLoading = "false";
         } else {
             window.addEventListener("chemicalLoaded", async () => {
-                this.setAttribute("href", await chemicalEncode(href))
+                this.setAttribute("href", await chemical.encode(href, {
+                    service,
+                    autoHttps,
+                    searchEngine
+                }))
                 this.dataset.chemicalLoading = "false";
             })
         }
@@ -131,7 +148,7 @@ function chemicalAction(action, frameID) {
                 frame.contentWindow.location.reload()
                 break;
             case "close":
-                frame.setAttribute("open", "false")
+                frame.dataset.open = "false"
                 frame.src = ""
         }
     }

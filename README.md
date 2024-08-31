@@ -49,7 +49,7 @@ const [app, listen] = new ChemicalServer({
 3. Use `app` which is an express app. You may need to import express for certain APIs.
 
 ```js
-chemical.get("/", function(req, res){
+app.get("/", function(req, res){
     res.send("Hello World");
 });
 ```
@@ -294,8 +294,10 @@ Setup a proxy site with easy HTML components.
 An anchor link but it automatically encodes the URL.
 
 ```html
-<a href="https://example.com" is="chemical-link">Link</a>
+<a data-href="https://example.com" is="chemical-link">Link</a>
 ```
+
+You can also add `data-service="uv"`, `data-autoHttps`, and `data-search-engine="https://www.google.com/search?q=%s"`
 
 You can style the link as chemical is loading.
 
@@ -310,19 +312,21 @@ a[data-chemical-loading="true"] {
 Opens in the current tab when the enter key is pressed.
 
 ```html
-<input target="_self" placeholder="Enter URL" is="chemical-input">
+<input data-target="_self" placeholder="Enter URL" is="chemical-input">
 ```
+
+You can also add `data-service="uv"`, `data-autoHttps`, and `data-search-engine="https://www.google.com/search?q=%s"`
 
 Opens in current tab when the enter key is pressed.
 
 ```html
-<input target="_blank" placeholder="Enter URL" is="chemical-input">
+<input data-target="_blank" placeholder="Enter URL" is="chemical-input">
 ```
 
-Custom action when the enter key is pressed. Change `action` to your function name. The first parameter of the action will be the encoded URL.
+Custom action when the enter key is pressed. Change `data-action` to your function name. The first parameter of the action will be the encoded URL.
 
 ```html
-<input action="logURL" placeholder="Enter URL" is="chemical-input">
+<input data-action="logURL" placeholder="Enter URL" is="chemical-input">
 <script>
     function logURL(url) {
         console.log(url)
@@ -335,8 +339,8 @@ Custom action when the enter key is pressed. Change `action` to your function na
 Opens when the enter key is pressed or button is clicked. Set the `for` attribute to the `id` of the button.
 
 ```html
-<input id="my-input" target="_blank" placeholder="Enter URL" is="chemical-input">
-<button for="my-input" is="chemical-button">Go!</button>
+<input id="my-input" data-target="_blank" placeholder="Enter URL" is="chemical-input">
+<button data-for="my-input" is="chemical-button">Go!</button>
 ```
 
 ### With iframe
@@ -344,7 +348,7 @@ Opens when the enter key is pressed or button is clicked. Set the `for` attribut
 A hidden iframe that is shown when the enter key is pressed. Set the `frame` attribute to the `id` of the iframe.
 
 ```html
-<input frame="my-iframe" placeholder="Enter URL" is="chemical-input">
+<input data-frame="my-iframe" placeholder="Enter URL" is="chemical-input">
 <iframe id="my-iframe" is="chemical-iframe"></iframe>
 ```
 
@@ -356,14 +360,14 @@ Set the `controls` attribute to the `id` of the controls.
 Set the second parameter of `chemicalAction` to the `id` of the iframe.
 
 ```html
-<input frame="my-iframe-2" placeholder="Enter URL" is="chemical-input">
+<input data-frame="my-iframe-2" placeholder="Enter URL" is="chemical-input">
 <section id="my-controls-2" is="chemical-controls">
     <button onclick="chemicalAction('back', 'my-iframe-2')">←</button>
     <button onclick="chemicalAction('forward', 'my-iframe-2')">→</button>
     <button onclick="chemicalAction('reload', 'my-iframe-2')">⟳</button>
     <button onclick="chemicalAction('close', 'my-iframe-2')">🗙</button>
 </section>
-<iframe controls="my-controls-2" id="my-iframe-2" is="chemical-iframe"></iframe>
+<iframe data-controls="my-controls-2" id="my-iframe-2" is="chemical-iframe"></iframe>
 ```
 
 ## License

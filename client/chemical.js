@@ -228,6 +228,14 @@ window.chemical.encode = async function (url, config) {
         }
     }
 
+    if (config.service == undefined) {
+        config.service = defaultService;
+    }
+
+    if (config.autoHttps == undefined) {
+        config.autoHttps = false;
+    }
+
     if (url.match(/^https?:\/\//)) {
         return await encodeService(url, config.service);
     } else if (config.autoHttps == true && (url.includes(".") && !url.includes(" "))) {
