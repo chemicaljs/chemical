@@ -297,7 +297,7 @@ An anchor link but it automatically encodes the URL.
 <a data-href="https://example.com" is="chemical-link">Link</a>
 ```
 
-You can also add `data-service="uv"`, `data-autoHttps`, and `data-search-engine="https://www.google.com/search?q=%s"`
+You can also add `data-service="uv"`, `data-auto-https`, and `data-search-engine="https://www.google.com/search?q=%s"`
 
 You can style the link as chemical is loading.
 
@@ -315,7 +315,7 @@ Opens in the current tab when the enter key is pressed.
 <input data-target="_self" placeholder="Enter URL" is="chemical-input">
 ```
 
-You can also add `data-service="uv"`, `data-autoHttps`, and `data-search-engine="https://www.google.com/search?q=%s"`
+You can also add `data-service="uv"`, `data-auto-https`, and `data-search-engine="https://www.google.com/search?q=%s"`
 
 Opens in current tab when the enter key is pressed.
 
