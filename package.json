@@ -18,7 +18,8 @@
         "@mercuryworkshop/wisp-js": "^0.1.1",
         "@rubynetwork/rammerhead": "^1.3.2",
         "@titaniumnetwork-dev/ultraviolet": "^3.2.7",
-        "express": "^4.19.2"
+        "express": "^4.19.2",
+        "meteorproxy": "^1.0.6-patch.1"
     },
     "engines": {
         "node": ">=20.11.0"

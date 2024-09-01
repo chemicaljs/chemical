@@ -9,6 +9,7 @@ import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
+import { meteorPath } from "meteorproxy";
 import { createRammerhead, shouldRouteRh, routeRhUpgrade, routeRhRequest } from "@rubynetwork/rammerhead";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -33,6 +34,10 @@ class ChemicalServer {
             options.scramjet = true;
         }
 
+        if (options.meteor == undefined) {
+            options.meteor = true;
+        }
+
         if (options.rammerhead == undefined) {
             options.rammerhead = true;
         }
@@ -53,7 +58,7 @@ class ChemicalServer {
             let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
 
             if (this.options.default) {
-                if (["uv", "rammerhead", "scramjet"].includes(this.options.default)) {
+                if (["uv", "rammerhead", "scramjet", "meteor"].includes(this.options.default)) {
                     chemicalMain = `const defaultService = "${this.options.default}";\n\n` + chemicalMain
                 } else {
                     chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain
@@ -65,6 +70,7 @@ class ChemicalServer {
 
             chemicalMain = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain
             chemicalMain = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalMain
+            chemicalMain = "const meteorEnabled = " + String(this.options.meteor) + ";\n" + chemicalMain
             chemicalMain = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalMain
 
             chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
@@ -77,6 +83,7 @@ class ChemicalServer {
 
             chemicalSW = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW
             chemicalSW = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalSW
+            chemicalSW = "const meteorEnabled = " + String(this.options.meteor) + ";\n" + chemicalSW
             chemicalSW = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalSW
 
             res.type("application/javascript");
@@ -93,6 +100,10 @@ class ChemicalServer {
         if (this.options.scramjet) {
             this.app.use("/scramjet/", express.static(resolve(__dirname, "config/scramjet")));
             this.app.use("/scramjet/", express.static(scramjetPath));
+        }
+        if (this.options.meteor) {
+            this.app.use("/meteor/", express.static(resolve(__dirname, "config/meteor")));
+            this.app.use("/meteor/", express.static(meteorPath));
         }
         this.server.on("request", (req, res) => {
             if (this.options.rammerhead && shouldRouteRh(req)) {
@@ -142,6 +153,10 @@ const ChemicalVitePlugin = (options) => ({
             options.scramjet = true;
         }
 
+        if (options.meteor == undefined) {
+            options.meteor = true;
+        }
+
         if (options.rammerhead == undefined) {
             options.rammerhead = true;
         }
@@ -155,7 +170,7 @@ const ChemicalVitePlugin = (options) => ({
             let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
 
             if (options.default) {
-                if (["uv", "rammerhead", "scramjet"].includes(options.default)) {
+                if (["uv", "rammerhead", "scramjet", "meteor"].includes(options.default)) {
                     chemicalMain = `const defaultService = "${options.default}";\n\n` + chemicalMain
                 } else {
                     chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain
@@ -167,6 +182,7 @@ const ChemicalVitePlugin = (options) => ({
 
             chemicalMain = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain
             chemicalMain = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalMain
+            chemicalMain = "const meteorEnabled = " + String(this.options.meteor) + ";\n" + chemicalMain
             chemicalMain = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalMain
 
             chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
@@ -179,6 +195,7 @@ const ChemicalVitePlugin = (options) => ({
 
             chemicalSW = "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW
             chemicalSW = "const scramjetEnabled = " + String(options.scramjet) + ";\n" + chemicalSW
+            chemicalSW = "const meteorEnabled = " + String(this.options.meteor) + ";\n" + chemicalSW
             chemicalSW = "const rammerheadEnabled = " + String(options.rammerhead) + ";\n" + chemicalSW
 
             res.type("application/javascript");
@@ -195,6 +212,10 @@ const ChemicalVitePlugin = (options) => ({
         if (options.scramjet) {
             app.use("/scramjet/", express.static(resolve(__dirname, "config/scramjet")));
             app.use("/scramjet/", express.static(scramjetPath));
+        }
+        if (options.meteor) {
+            app.use("/meteor/", express.static(resolve(__dirname, "config/meteor")));
+            app.use("/meteor/", express.static(meteorPath));
         }
 
         server.middlewares.use(app);
@@ -264,6 +285,10 @@ class ChemicalBuild {
             options.scramjet = true;
         }
 
+        if (options.meteor == undefined) {
+            options.meteor = true;
+        }
+
         if (options.rammerhead == undefined) {
             options.rammerhead = true;
         }
@@ -282,7 +307,7 @@ class ChemicalBuild {
         let chemicalMain = await readFileSync(resolve(__dirname, "client/chemical.js"), "utf8");
 
         if (this.options.default) {
-            if (["uv", "rammerhead", "scramjet"].includes(this.options.default)) {
+            if (["uv", "rammerhead", "scramjet", "meteor"].includes(this.options.default)) {
                 chemicalMain = `const defaultService = "${this.options.default}";\n\n` + chemicalMain
             } else {
                 chemicalMain = `const defaultService = "uv";\n\n` + chemicalMain
@@ -294,6 +319,7 @@ class ChemicalBuild {
 
         chemicalMain = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain
         chemicalMain = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalMain
+        chemicalMain = "const meteorEnabled = " + String(this.options.meteor) + ";\n" + chemicalMain
         chemicalMain = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalMain
 
         chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
@@ -304,6 +330,7 @@ class ChemicalBuild {
 
         chemicalSW = "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW
         chemicalSW = "const scramjetEnabled = " + String(this.options.scramjet) + ";\n" + chemicalSW
+        chemicalSW = "const meteorEnabled = " + String(this.options.meteor) + ";\n" + chemicalSW
         chemicalSW = "const rammerheadEnabled = " + String(this.options.rammerhead) + ";\n" + chemicalSW
 
         writeFileSync(resolve(this.options.path, "chemical.sw.js"), chemicalSW);
@@ -319,6 +346,10 @@ class ChemicalBuild {
         if (this.options.scramjet) {
             cpSync(scramjetPath, resolve(this.options.path, "scramjet"), { recursive: true });
             copyFileSync(resolve(__dirname, "config/scramjet/scramjet.config.js"), resolve(this.options.path, "scramjet/scramjet.config.js"));
+        }
+        if (this.options.meteor) {
+            cpSync(meteorPath, resolve(this.options.path, "meteor"), { recursive: true });
+            copyFileSync(resolve(__dirname, "config/meteor/meteor.config.js"), resolve(this.options.path, "meteor/meteor.config.js"));
         }
     }
 }

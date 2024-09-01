@@ -198,8 +198,8 @@ async function encodeService(url, service) {
             if (uvEnabled) {
                 return (
                     window.location.origin +
-                    window.__uv$config.prefix +
-                    window.__uv$config.encodeUrl(url)
+                    __uv$config.prefix +
+                    __uv$config.encodeUrl(url)
                 );
             }
             break;
@@ -212,8 +212,15 @@ async function encodeService(url, service) {
             if (scramjetEnabled) {
                 return (
                     window.location.origin +
-                    window.__scramjet$config.prefix +
-                    window.__scramjet$config.codec.encode(url)
+                    __scramjet$config.prefix +
+                    __scramjet$config.codec.encode(url)
+                );
+            }
+            break;
+        case "meteor":
+            if (meteorEnabled) {
+                return (
+                    window.location.origin + $meteor_config.prefix + $meteor_config.codec.encode(url)
                 );
             }
             break;
@@ -268,6 +275,13 @@ window.chemical.decode = async function (url, config) {
         case "scramjet":
             if (scramjetEnabled) {
                 return __scramjet$config.codec.decode(url.split(__scramjet$config.prefix)[1]);
+            }
+            break;
+        case "meteor":
+            if (meteorEnabled) {
+                return (
+                    $meteor_config.codec.decode(url.split($meteor_config.prefix)[1])
+                );
             }
             break;
     }
@@ -347,6 +361,10 @@ if (uvEnabled) {
 if (scramjetEnabled) {
     await loadScript("/scramjet/scramjet.codecs.js");
     await loadScript("/scramjet/scramjet.config.js");
+}
+if (meteorEnabled) {
+    await loadScript("/meteor/meteor.codecs.js")
+    await loadScript("/meteor/meteor.config.js")
 }
 window.chemical.connection = new window.BareMux.BareMuxConnection("/baremux/worker.js");
 await window.chemical.setTransport();
