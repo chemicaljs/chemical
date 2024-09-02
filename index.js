@@ -255,7 +255,7 @@ const ChemicalVitePlugin = (options) => ({
         chemicalMain;
       chemicalMain =
         "const meteorEnabled = " +
-        String(this.options.meteor) +
+        String(options.meteor) +
         ";\n" +
         chemicalMain;
       chemicalMain =
@@ -284,7 +284,7 @@ const ChemicalVitePlugin = (options) => ({
         chemicalSW;
       chemicalSW =
         "const meteorEnabled = " +
-        String(this.options.meteor) +
+        String(options.meteor) +
         ";\n" +
         chemicalSW;
       chemicalSW =
