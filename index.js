@@ -108,6 +108,20 @@ class ChemicalServer {
         String(this.options.rammerhead) +
         ";\n" +
         chemicalMain;
+      chemicalMain =
+        "const hostnameBlacklist = [" +
+        (this.options.hostname_blacklist
+          ? this.options.hostname_blacklist.join(", ")
+          : "") +
+        "];\n" +
+        chemicalMain;
+      chemicalMain =
+        "const hostnameWhitelist = [" +
+        (this.options.hostname_whitelist
+          ? this.options.hostname_whitelist.join(", ")
+          : "") +
+        "];\n" +
+        chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
@@ -173,12 +187,10 @@ class ChemicalServer {
     this.server.on("upgrade", (req, socket, head) => {
       if (req.url && req.url.endsWith("/wisp/")) {
         if (this.options.hostname_blacklist) {
-          wisp.this.options.hostname_blacklist =
-            this.options.hostname_blacklist;
+          wisp.options.hostname_blacklist = this.options.hostname_blacklist;
         }
         if (this.options.hostname_whitelist) {
-          wisp.this.options.hostname_whitelist =
-            this.options.hostname_whitelist;
+          wisp.options.hostname_whitelist = this.options.hostname_whitelist;
         }
         wisp.routeRequest(req, socket, head);
       } else if (this.options.rammerhead && shouldRouteRh(req)) {
@@ -263,6 +275,20 @@ const ChemicalVitePlugin = (options) => ({
         String(options.rammerhead) +
         ";\n" +
         chemicalMain;
+      chemicalMain =
+        "const hostnameBlacklist = [" +
+        (options.hostname_blacklist
+          ? options.hostname_blacklist.join(", ")
+          : "") +
+        "];\n" +
+        chemicalMain;
+      chemicalMain =
+        "const hostnameWhitelist = [" +
+        (options.hostname_whitelist
+          ? options.hostname_whitelist.join(", ")
+          : "") +
+        "];\n" +
+        chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
@@ -283,10 +309,7 @@ const ChemicalVitePlugin = (options) => ({
         ";\n" +
         chemicalSW;
       chemicalSW =
-        "const meteorEnabled = " +
-        String(options.meteor) +
-        ";\n" +
-        chemicalSW;
+        "const meteorEnabled = " + String(options.meteor) + ";\n" + chemicalSW;
       chemicalSW =
         "const rammerheadEnabled = " +
         String(options.rammerhead) +
@@ -442,6 +465,20 @@ class ChemicalBuild {
       "const rammerheadEnabled = " +
       String(this.options.rammerhead) +
       ";\n" +
+      chemicalMain;
+    chemicalMain =
+      "const hostnameBlacklist = [" +
+      (this.options.hostname_blacklist
+        ? this.options.hostname_blacklist.join(", ")
+        : "") +
+      "];\n" +
+      chemicalMain;
+    chemicalMain =
+      "const hostnameWhitelist = [" +
+      (this.options.hostname_whitelist
+        ? this.options.hostname_whitelist.join(", ")
+        : "") +
+      "];\n" +
       chemicalMain;
 
     chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";

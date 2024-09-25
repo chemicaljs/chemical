@@ -304,6 +304,45 @@ window.chemical.decode = async function (url, config) {
   }
 };
 
+function checkWhitelist(entries, filter) {
+  let matched = false;
+  for (let entry of entries) {
+    if (filter(entry)) {
+      matched = true;
+      break;
+    }
+  }
+  return !matched;
+}
+
+function checkBlacklist(entries, filter) {
+  for (let entry of entries) {
+    if (filter(entry)) return true;
+  }
+  return false;
+}
+
+window.chemical.blocked = function (url) {
+  let parsedURL;
+  try {
+    parsedURL = new URL(url);
+  } catch {
+    return false;
+  }
+
+  if (hostnameWhitelist.length) {
+    return check_whitelist(hostnameWhitelist, (entry) =>
+      entry.test(parsedURL.hostname)
+    );
+  } else if (hostnameBlacklist.length) {
+    return checkBlacklist(hostnameBlacklist, (entry) =>
+      entry.test(parsedURL.hostname)
+    );
+  } else {
+    return false;
+  }
+};
+
 function getTransport(transport) {
   switch (transport) {
     default:
