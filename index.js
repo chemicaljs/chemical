@@ -40,23 +40,23 @@ class ChemicalServer {
       options = {};
     }
 
-    if (options.uv == undefined) {
+    if (options.uv === undefined) {
       options.uv = true;
     }
 
-    if (options.experimental == undefined) {
-      options.experimental = {}
+    if (options.experimental === undefined) {
+      options.experimental = {};
     }
 
-    if (options.experimental.scramjet == undefined) {
+    if (options.experimental.scramjet === undefined) {
       options.experimental.scramjet = false;
     }
 
-    if (options.experimental.meteor == undefined) {
+    if (options.experimental.meteor === undefined) {
       options.experimental.meteor = false;
     }
 
-    if (options.rammerhead == undefined) {
+    if (options.rammerhead === undefined) {
       options.rammerhead = true;
     }
 
@@ -178,7 +178,7 @@ class ChemicalServer {
       if (req.url && req.url.endsWith("/wisp/")) {
         if (this.options.wispOptions) {
           for (let option in this.options.wispOptions) {
-            wisp.options[option] = this.options.wispOptions[option]
+            wisp.options[option] = this.options.wispOptions[option];
           }
         }
         wisp.routeRequest(req, socket, head);
@@ -206,23 +206,23 @@ const ChemicalVitePlugin = (options) => ({
       options = {};
     }
 
-    if (options.uv == undefined) {
+    if (options.uv === undefined) {
       options.uv = true;
     }
 
-    if (options.experimental == undefined) {
-      options.experimental = {}
+    if (options.experimental === undefined) {
+      options.experimental = {};
     }
 
-    if (options.experimental.scramjet == undefined) {
+    if (options.experimental.scramjet === undefined) {
       options.experimental.scramjet = false;
     }
 
-    if (options.experimental.meteor == undefined) {
+    if (options.experimental.meteor === undefined) {
       options.experimental.meteor = false;
     }
 
-    if (options.rammerhead == undefined) {
+    if (options.rammerhead === undefined) {
       options.rammerhead = true;
     }
 
@@ -288,7 +288,10 @@ const ChemicalVitePlugin = (options) => ({
         ";\n" +
         chemicalSW;
       chemicalSW =
-        "const meteorEnabled = " + String(options.experimental.meteor) + ";\n" + chemicalSW;
+        "const meteorEnabled = " +
+        String(options.experimental.meteor) +
+        ";\n" +
+        chemicalSW;
       chemicalSW =
         "const rammerheadEnabled = " +
         String(options.rammerhead) +
@@ -338,7 +341,7 @@ const ChemicalVitePlugin = (options) => ({
       if (req.url && req.url.endsWith("/wisp/")) {
         if (options.wispOptions) {
           for (let option in options.wispOptions) {
-            wisp.options[option] = options.wispOptions[option]
+            wisp.options[option] = options.wispOptions[option];
           }
         }
         wisp.routeRequest(req, socket, head);
@@ -364,7 +367,7 @@ class ChemicalBuild {
       options = {};
     }
 
-    if (options.path == undefined) {
+    if (options.path === undefined) {
       options.path = "dist";
     }
 
@@ -376,23 +379,23 @@ class ChemicalBuild {
       options.path = options.path.slice(0, -1);
     }
 
-    if (options.uv == undefined) {
+    if (options.uv === undefined) {
       options.uv = true;
     }
 
-    if (options.experimental == undefined) {
-      options.experimental = {}
+    if (options.experimental === undefined) {
+      options.experimental = {};
     }
 
-    if (options.experimental.scramjet == undefined) {
+    if (options.experimental.scramjet === undefined) {
       options.experimental.scramjet = false;
     }
 
-    if (options.experimental.meteor == undefined) {
+    if (options.experimental.meteor === undefined) {
       options.experimental.meteor = false;
     }
 
-    if (options.rammerhead == undefined) {
+    if (options.rammerhead === undefined) {
       options.rammerhead = true;
     }
 

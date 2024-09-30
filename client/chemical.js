@@ -1,12 +1,26 @@
+const currentScript = document.currentScript;
+
 window.chemical = {
   loaded: false,
-  transport: document.currentScript.dataset.transport || "libcurl",
+  transport:
+    currentScript.dataset.transportStore !== undefined
+      ? localStorage.getItem("@chemical/transport") ||
+        currentScript.dataset.transport ||
+        "libcurl"
+      : currentScript.dataset.transport || "libcurl",
   wisp:
-    document.currentScript.dataset.wisp ||
-    (location.protocol === "https:" ? "wss" : "ws") +
-      "://" +
-      location.host +
-      "/wisp/",
+    currentScript.dataset.wispStore !== undefined
+      ? localStorage.getItem("@chemical/wisp") ||
+        currentScript.dataset.wisp ||
+        (location.protocol === "https:" ? "wss" : "ws") +
+          "://" +
+          location.host +
+          "/wisp/"
+      : currentScript.dataset.wisp ||
+        (location.protocol === "https:" ? "wss" : "ws") +
+          "://" +
+          location.host +
+          "/wisp/",
 };
 
 function rammerheadEncode(baseUrl, decode = false) {
@@ -242,18 +256,18 @@ window.chemical.encode = async function (url, config) {
     };
   }
 
-  if (config.service == undefined) {
+  if (config.service === undefined) {
     config.service = defaultService;
   }
 
-  if (config.autoHttps == undefined) {
+  if (config.autoHttps === undefined) {
     config.autoHttps = false;
   }
 
   if (url.match(/^https?:\/\//)) {
     return await encodeService(url, config.service);
   } else if (
-    config.autoHttps == true &&
+    config.autoHttps === true &&
     url.includes(".") &&
     !url.includes(" ")
   ) {
@@ -304,6 +318,41 @@ window.chemical.decode = async function (url, config) {
   }
 };
 
+window.chemical.setStore = function (key, value) {
+  const allowed = ["transport", "wisp", "service", "autoHttps", "searchEngine"];
+
+  if (allowed.includes(key)) {
+    localStorage.setItem("@chemical/" + key, String(value));
+    if (key === "transport") {
+      window.chemical.setTransport(value);
+    }
+    if (key === "wisp") {
+      window.chemical.setWisp(value);
+    }
+    window.dispatchEvent(
+      new CustomEvent("chemicalStoreChange", {
+        detail: { key, value },
+      })
+    );
+  }
+};
+
+window.chemical.getStore = function (key) {
+  const value =
+    key === "autoHttps"
+      ? localStorage.getItem("@chemical/" + key) === "true"
+      : localStorage.getItem("@chemical/" + key);
+
+  const defaults = {
+    transport: window.chemical.transport,
+    wisp: window.chemical.wisp,
+    service: "uv",
+    autoHttps: false,
+  };
+
+  return value || defaults[key];
+};
+
 function getTransport(transport) {
   switch (transport) {
     default:
@@ -316,16 +365,22 @@ function getTransport(transport) {
   }
 }
 
-window.chemical.setTransport = async function (
-  newTransport = window.chemical.transport
-) {
+window.chemical.setTransport = async function (newTransport) {
+  newTransport = newTransport || currentScript.dataset.transport || "libcurl";
   await window.chemical.connection.setTransport(getTransport(newTransport), [
     { wisp: window.chemical.wisp },
   ]);
   window.chemical.transport = newTransport;
 };
 
-window.chemical.setWisp = async function (wisp = window.chemical.wisp) {
+window.chemical.setWisp = async function (wisp) {
+  wisp =
+    wisp ||
+    currentScript.dataset.wisp ||
+    (location.protocol === "https:" ? "wss" : "ws") +
+      "://" +
+      location.host +
+      "/wisp/";
   await window.chemical.connection.setTransport(
     getTransport(window.chemical.transport),
     [{ wisp: wisp }]
@@ -411,7 +466,7 @@ if (meteorEnabled) {
 window.chemical.connection = new window.BareMux.BareMuxConnection(
   "/baremux/worker.js"
 );
-await window.chemical.setTransport();
+await window.chemical.setTransport(window.chemical.transport);
 setupFetch();
 await registerSW();
 window.chemical.loaded = true;

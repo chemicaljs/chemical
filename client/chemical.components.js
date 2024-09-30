@@ -4,10 +4,23 @@ class ChemicalInput extends HTMLInputElement {
   }
   connectedCallback() {
     this.addEventListener("keydown", async function (e) {
-      if (e.key == "Enter" && window.chemical.loaded && e.target.value) {
-        let service = this.dataset.service || "uv";
-        let autoHttps = this.dataset.autoHttps !== undefined ? true : false;
-        let searchEngine = this.dataset.searchEngine;
+      if (e.key === "Enter" && window.chemical.loaded && e.target.value) {
+        let service =
+          this.dataset.serviceStore !== undefined
+            ? localStorage.getItem("@chemical/service") ||
+              this.dataset.service ||
+              "uv"
+            : this.dataset.service || "uv";
+        let autoHttps =
+          this.dataset.autoHttpsStore !== undefined
+            ? localStorage.getItem("@chemical/autoHttps") === "true"
+            : this.dataset.autoHttps !== undefined
+            ? true
+            : false;
+        let searchEngine =
+          this.dataset.searchEngineStore !== undefined
+            ? localStorage.getItem("@chemical/searchEngine")
+            : this.dataset.searchEngine;
         let action = this.dataset.action;
         let target = this.dataset.target;
         let frame = this.dataset.frame;
@@ -28,9 +41,9 @@ class ChemicalInput extends HTMLInputElement {
         }
 
         if (target) {
-          if (target == "_self") {
+          if (target === "_self") {
             window.location = encodedURL;
-          } else if (target == "_blank") {
+          } else if (target === "_blank") {
             window.open(encodedURL);
           }
         }
@@ -65,12 +78,12 @@ class ChemicalIFrame extends HTMLIFrameElement {
   }
   connectedCallback() {
     let open = this.dataset.open;
-    this.style.display = open == "true" ? "" : "none";
+    this.style.display = open === "true" ? "" : "none";
   }
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name == "data-open") {
+    if (name === "data-open") {
       let open = this.dataset.open;
-      this.style.display = open == "true" ? "" : "none";
+      this.style.display = open === "true" ? "" : "none";
 
       let controls = document.getElementById(this.dataset.controls);
 
@@ -88,12 +101,12 @@ class ChemicalControls extends HTMLElement {
   }
   connectedCallback() {
     let open = this.dataset.open;
-    this.style.display = open == "true" ? "" : "none";
+    this.style.display = open === "true" ? "" : "none";
   }
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name == "data-open") {
+    if (name === "data-open") {
       let open = this.dataset.open;
-      this.style.display = open == "true" ? "" : "none";
+      this.style.display = open === "true" ? "" : "none";
     }
   }
 }
@@ -135,6 +148,41 @@ class ChemicalLink extends HTMLAnchorElement {
   }
 }
 
+class ChemicalSelect extends HTMLSelectElement {
+  constructor() {
+    super();
+  }
+  connectedCallback() {
+    const store = this.dataset.defaultStore;
+
+    this.addEventListener("change", function () {
+      window.chemical.setStore(store, this.value);
+    });
+
+    if (store) {
+      const value = window.chemical.getStore(store);
+
+      const observerOptions = {
+        childList: true,
+        subtree: false,
+      };
+
+      const observer = new MutationObserver((records, observer) => {
+        for (const record of records) {
+          for (const addedNode of record.addedNodes) {
+            if (addedNode.tagName === "OPTION") {
+              if (addedNode.getAttribute("value") === value) {
+                addedNode.setAttribute("selected", "");
+              }
+            }
+          }
+        }
+      });
+      observer.observe(this, observerOptions);
+    }
+  }
+}
+
 customElements.define("chemical-input", ChemicalInput, { extends: "input" });
 customElements.define("chemical-button", ChemicalButton, { extends: "button" });
 customElements.define("chemical-iframe", ChemicalIFrame, { extends: "iframe" });
@@ -142,8 +190,9 @@ customElements.define("chemical-controls", ChemicalControls, {
   extends: "section",
 });
 customElements.define("chemical-link", ChemicalLink, { extends: "a" });
+customElements.define("chemical-select", ChemicalSelect, { extends: "select" });
 
-function chemicalAction(action, frameID) {
+window.chemical.componentAction = function (action, frameID) {
   let frame = document.getElementById(frameID);
 
   if (frame) {
@@ -162,4 +211,4 @@ function chemicalAction(action, frameID) {
         frame.src = "";
     }
   }
-}
+};
