@@ -44,12 +44,16 @@ class ChemicalServer {
       options.uv = true;
     }
 
-    if (options.scramjet == undefined) {
-      options.scramjet = true;
+    if (options.experimental == undefined) {
+      options.experimental = {}
     }
 
-    if (options.meteor == undefined) {
-      options.meteor = true;
+    if (options.experimental.scramjet == undefined) {
+      options.experimental.scramjet = false;
+    }
+
+    if (options.experimental.meteor == undefined) {
+      options.experimental.meteor = false;
     }
 
     if (options.rammerhead == undefined) {
@@ -95,32 +99,18 @@ class ChemicalServer {
         "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain;
       chemicalMain =
         "const scramjetEnabled = " +
-        String(this.options.scramjet) +
+        String(this.options.experimental.scramjet) +
         ";\n" +
         chemicalMain;
       chemicalMain =
         "const meteorEnabled = " +
-        String(this.options.meteor) +
+        String(this.options.experimental.meteor) +
         ";\n" +
         chemicalMain;
       chemicalMain =
         "const rammerheadEnabled = " +
         String(this.options.rammerhead) +
         ";\n" +
-        chemicalMain;
-      chemicalMain =
-        "const hostnameBlacklist = [" +
-        (this.options.hostname_blacklist
-          ? this.options.hostname_blacklist.join(", ")
-          : "") +
-        "];\n" +
-        chemicalMain;
-      chemicalMain =
-        "const hostnameWhitelist = [" +
-        (this.options.hostname_whitelist
-          ? this.options.hostname_whitelist.join(", ")
-          : "") +
-        "];\n" +
         chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
@@ -138,12 +128,12 @@ class ChemicalServer {
         "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW;
       chemicalSW =
         "const scramjetEnabled = " +
-        String(this.options.scramjet) +
+        String(this.options.experimental.scramjet) +
         ";\n" +
         chemicalSW;
       chemicalSW =
         "const meteorEnabled = " +
-        String(this.options.meteor) +
+        String(this.options.experimental.meteor) +
         ";\n" +
         chemicalSW;
       chemicalSW =
@@ -163,14 +153,14 @@ class ChemicalServer {
       this.app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
       this.app.use("/uv/", express.static(uvPath));
     }
-    if (this.options.scramjet) {
+    if (this.options.experimental.scramjet) {
       this.app.use(
         "/scramjet/",
         express.static(resolve(__dirname, "config/scramjet"))
       );
       this.app.use("/scramjet/", express.static(scramjetPath));
     }
-    if (this.options.meteor) {
+    if (this.options.experimental.meteor) {
       this.app.use(
         "/meteor/",
         express.static(resolve(__dirname, "config/meteor"))
@@ -186,11 +176,10 @@ class ChemicalServer {
     });
     this.server.on("upgrade", (req, socket, head) => {
       if (req.url && req.url.endsWith("/wisp/")) {
-        if (this.options.hostname_blacklist) {
-          wisp.options.hostname_blacklist = this.options.hostname_blacklist;
-        }
-        if (this.options.hostname_whitelist) {
-          wisp.options.hostname_whitelist = this.options.hostname_whitelist;
+        if (this.options.wispOptions) {
+          for (let option in this.options.wispOptions) {
+            wisp.options[option] = this.options.wispOptions[option]
+          }
         }
         wisp.routeRequest(req, socket, head);
       } else if (this.options.rammerhead && shouldRouteRh(req)) {
@@ -221,12 +210,16 @@ const ChemicalVitePlugin = (options) => ({
       options.uv = true;
     }
 
-    if (options.scramjet == undefined) {
-      options.scramjet = true;
+    if (options.experimental == undefined) {
+      options.experimental = {}
     }
 
-    if (options.meteor == undefined) {
-      options.meteor = true;
+    if (options.experimental.scramjet == undefined) {
+      options.experimental.scramjet = false;
+    }
+
+    if (options.experimental.meteor == undefined) {
+      options.experimental.meteor = false;
     }
 
     if (options.rammerhead == undefined) {
@@ -262,32 +255,18 @@ const ChemicalVitePlugin = (options) => ({
         "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain;
       chemicalMain =
         "const scramjetEnabled = " +
-        String(options.scramjet) +
+        String(options.experimental.scramjet) +
         ";\n" +
         chemicalMain;
       chemicalMain =
         "const meteorEnabled = " +
-        String(options.meteor) +
+        String(options.experimental.meteor) +
         ";\n" +
         chemicalMain;
       chemicalMain =
         "const rammerheadEnabled = " +
         String(options.rammerhead) +
         ";\n" +
-        chemicalMain;
-      chemicalMain =
-        "const hostnameBlacklist = [" +
-        (options.hostname_blacklist
-          ? options.hostname_blacklist.join(", ")
-          : "") +
-        "];\n" +
-        chemicalMain;
-      chemicalMain =
-        "const hostnameWhitelist = [" +
-        (options.hostname_whitelist
-          ? options.hostname_whitelist.join(", ")
-          : "") +
-        "];\n" +
         chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
@@ -305,11 +284,11 @@ const ChemicalVitePlugin = (options) => ({
         "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW;
       chemicalSW =
         "const scramjetEnabled = " +
-        String(options.scramjet) +
+        String(options.experimental.scramjet) +
         ";\n" +
         chemicalSW;
       chemicalSW =
-        "const meteorEnabled = " + String(options.meteor) + ";\n" + chemicalSW;
+        "const meteorEnabled = " + String(options.experimental.meteor) + ";\n" + chemicalSW;
       chemicalSW =
         "const rammerheadEnabled = " +
         String(options.rammerhead) +
@@ -327,14 +306,14 @@ const ChemicalVitePlugin = (options) => ({
       app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
       app.use("/uv/", express.static(uvPath));
     }
-    if (options.scramjet) {
+    if (options.experimental.scramjet) {
       app.use(
         "/scramjet/",
         express.static(resolve(__dirname, "config/scramjet"))
       );
       app.use("/scramjet/", express.static(scramjetPath));
     }
-    if (options.meteor) {
+    if (options.experimental.meteor) {
       app.use("/meteor/", express.static(resolve(__dirname, "config/meteor")));
       app.use("/meteor/", express.static(meteorPath));
     }
@@ -357,11 +336,10 @@ const ChemicalVitePlugin = (options) => ({
 
     server.httpServer.on("upgrade", (req, socket, head) => {
       if (req.url && req.url.endsWith("/wisp/")) {
-        if (options.hostname_blacklist) {
-          wisp.options.hostname_blacklist = options.hostname_blacklist;
-        }
-        if (options.hostname_whitelist) {
-          wisp.options.hostname_whitelist = options.hostname_whitelist;
+        if (options.wispOptions) {
+          for (let option in options.wispOptions) {
+            wisp.options[option] = options.wispOptions[option]
+          }
         }
         wisp.routeRequest(req, socket, head);
       } else if (options.rammerhead && shouldRouteRh(req)) {
@@ -402,12 +380,16 @@ class ChemicalBuild {
       options.uv = true;
     }
 
-    if (options.scramjet == undefined) {
-      options.scramjet = true;
+    if (options.experimental == undefined) {
+      options.experimental = {}
     }
 
-    if (options.meteor == undefined) {
-      options.meteor = true;
+    if (options.experimental.scramjet == undefined) {
+      options.experimental.scramjet = false;
+    }
+
+    if (options.experimental.meteor == undefined) {
+      options.experimental.meteor = false;
     }
 
     if (options.rammerhead == undefined) {
@@ -453,32 +435,18 @@ class ChemicalBuild {
       "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain;
     chemicalMain =
       "const scramjetEnabled = " +
-      String(this.options.scramjet) +
+      String(this.options.experimental.scramjet) +
       ";\n" +
       chemicalMain;
     chemicalMain =
       "const meteorEnabled = " +
-      String(this.options.meteor) +
+      String(this.options.experimental.meteor) +
       ";\n" +
       chemicalMain;
     chemicalMain =
       "const rammerheadEnabled = " +
       String(this.options.rammerhead) +
       ";\n" +
-      chemicalMain;
-    chemicalMain =
-      "const hostnameBlacklist = [" +
-      (this.options.hostname_blacklist
-        ? this.options.hostname_blacklist.join(", ")
-        : "") +
-      "];\n" +
-      chemicalMain;
-    chemicalMain =
-      "const hostnameWhitelist = [" +
-      (this.options.hostname_whitelist
-        ? this.options.hostname_whitelist.join(", ")
-        : "") +
-      "];\n" +
       chemicalMain;
 
     chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
@@ -494,12 +462,12 @@ class ChemicalBuild {
       "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW;
     chemicalSW =
       "const scramjetEnabled = " +
-      String(this.options.scramjet) +
+      String(this.options.experimental.scramjet) +
       ";\n" +
       chemicalSW;
     chemicalSW =
       "const meteorEnabled = " +
-      String(this.options.meteor) +
+      String(this.options.experimental.meteor) +
       ";\n" +
       chemicalSW;
     chemicalSW =
@@ -527,7 +495,7 @@ class ChemicalBuild {
         resolve(this.options.path, "uv/uv.config.js")
       );
     }
-    if (this.options.scramjet) {
+    if (this.options.experimental.scramjet) {
       cpSync(scramjetPath, resolve(this.options.path, "scramjet"), {
         recursive: true,
       });
@@ -536,7 +504,7 @@ class ChemicalBuild {
         resolve(this.options.path, "scramjet/scramjet.config.js")
       );
     }
-    if (this.options.meteor) {
+    if (this.options.experimental.meteor) {
       cpSync(meteorPath, resolve(this.options.path, "meteor"), {
         recursive: true,
       });
