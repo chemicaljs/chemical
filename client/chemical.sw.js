@@ -3,6 +3,24 @@ if (uvEnabled) {
   importScripts("/uv/uv.config.js");
   importScripts(__uv$config.sw || "/uv/uv.sw.js");
 }
+if (aeroEnabled) {
+  /**
+   * @type {string}
+   */
+  const dirToAero = "/aero/";
+  /**
+   * @type {string}
+   */
+  pathToPatchedAerohandler = `${dirToAero}extras/handleWithExtras.js`;
+
+  // configs
+  importScripts(`${dirToAero}defaultConfig.aero.js`);
+  importScripts(`${dirToAero}config.aero.js`);
+  // Bare
+  importScripts(aeroConfig.bundles["bare-mux"]);
+  // aero handlers
+  importScripts(aeroConfig.bundles.handle);
+}
 if (scramjetEnabled) {
   importScripts("/scramjet/scramjet.codecs.js");
   importScripts("/scramjet/scramjet.config.js");
@@ -18,10 +36,13 @@ if (meteorEnabled) {
 
 Object.defineProperty(self, "crossOriginIsolated", { value: true }); // Firefox fix
 
-let uv, scramjet, meteor;
+let uv, aeroHandlerWithExtras, scramjet, meteor;
 
 if (uvEnabled) {
   uv = new UVServiceWorker();
+}
+if (aeroEnabled) {
+  aeroHandlerWithExtras = patchAeroHandler(aeroHandle);
 }
 if (scramjetEnabled) {
   scramjet = new ScramjetServiceWorker();
@@ -35,12 +56,14 @@ self.addEventListener("fetch", (event) => {
     (async () => {
       if (uvEnabled && uv.route(event)) {
         return await uv.fetch(event);
+      } else if (aeroEnabled && routeAero(event)) {
+        return await aeroHandlerWithExtras(event);
       } else if (scramjetEnabled && scramjet.route(event)) {
         return await scramjet.fetch(event);
       } else if (meteorEnabled && meteor.shouldRoute(event)) {
         return meteor.handleFetch(event);
       }
       return await fetch(event.request);
-    })()
+    })(),
   );
 });

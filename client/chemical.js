@@ -59,7 +59,7 @@ function rammerheadEncode(baseUrl, decode = false) {
           shuffledStr += char;
         } else {
           shuffledStr += this.dictionary.charAt(
-            mod(idx + i, baseDictionary.length)
+            mod(idx + i, baseDictionary.length),
           );
         }
       }
@@ -85,7 +85,7 @@ function rammerheadEncode(baseUrl, decode = false) {
           unshuffledStr += char;
         } else {
           unshuffledStr += baseDictionary.charAt(
-            mod(idx - i, baseDictionary.length)
+            mod(idx - i, baseDictionary.length),
           );
         }
       }
@@ -109,7 +109,7 @@ function rammerheadEncode(baseUrl, decode = false) {
           console.log(
             'unexpected server response to not match "200". Server says "' +
               request.responseText +
-              '"'
+              '"',
           );
       }
     };
@@ -275,7 +275,7 @@ window.chemical.encode = async function (url, config) {
   } else if (config.searchEngine) {
     return await encodeService(
       config.searchEngine.replace("%s", encodeURIComponent(url)),
-      config.service
+      config.service,
     );
   } else {
     return await encodeService(url, config.service);
@@ -299,14 +299,14 @@ window.chemical.decode = async function (url, config) {
       if (rammerheadEnabled) {
         return await rammerheadEncode(
           url.split(window.location.origin)[1],
-          true
+          true,
         );
       }
       break;
     case "scramjet":
       if (scramjetEnabled) {
         return __scramjet$config.codec.decode(
-          url.split(__scramjet$config.prefix)[1]
+          url.split(__scramjet$config.prefix)[1],
         );
       }
       break;
@@ -332,7 +332,7 @@ window.chemical.setStore = function (key, value) {
     window.dispatchEvent(
       new CustomEvent("chemicalStoreChange", {
         detail: { key, value },
-      })
+      }),
     );
   }
 };
@@ -383,7 +383,7 @@ window.chemical.setWisp = async function (wisp) {
       "/wisp/";
   await window.chemical.connection.setTransport(
     getTransport(window.chemical.transport),
-    [{ wisp: wisp }]
+    [{ wisp: wisp }],
   );
   window.chemical.wisp = wisp;
 };
@@ -421,7 +421,7 @@ function setupFetch() {
 
     try {
       const DDGSuggestions = await window.chemical.fetch(
-        "https://duckduckgo.com/ac/?q=" + query + "&type=list"
+        "https://duckduckgo.com/ac/?q=" + query + "&type=list",
       );
       const suggestions = await DDGSuggestions.json();
       return suggestions[1].slice(0, 9);
@@ -451,6 +451,9 @@ function setupFetch() {
 }
 
 await loadScript("/baremux/index.js");
+if (aeroEnabled) {
+  await loadScript("/aero/config.aero.js");
+}
 if (uvEnabled) {
   await loadScript("/uv/uv.bundle.js");
   await loadScript("/uv/uv.config.js");
@@ -464,7 +467,7 @@ if (meteorEnabled) {
   await loadScript("/meteor/meteor.config.js");
 }
 window.chemical.connection = new window.BareMux.BareMuxConnection(
-  "/baremux/worker.js"
+  "/baremux/worker.js",
 );
 await window.chemical.setTransport(window.chemical.transport);
 setupFetch();
