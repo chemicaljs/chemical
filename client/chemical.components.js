@@ -15,8 +15,8 @@ class ChemicalInput extends HTMLInputElement {
           this.dataset.autoHttpsStore !== undefined
             ? localStorage.getItem("@chemical/autoHttps") === "true"
             : this.dataset.autoHttps !== undefined
-            ? true
-            : false;
+              ? true
+              : false;
         let searchEngine =
           this.dataset.searchEngineStore !== undefined
             ? localStorage.getItem("@chemical/searchEngine")
@@ -64,7 +64,7 @@ class ChemicalButton extends HTMLButtonElement {
         forInput.dispatchEvent(
           new KeyboardEvent("keydown", {
             key: "Enter",
-          })
+          }),
         );
       }
     });
@@ -129,7 +129,7 @@ class ChemicalLink extends HTMLAnchorElement {
           service,
           autoHttps,
           searchEngine,
-        })
+        }),
       );
       this.dataset.chemicalLoading = "false";
     } else {
@@ -140,7 +140,7 @@ class ChemicalLink extends HTMLAnchorElement {
             service,
             autoHttps,
             searchEngine,
-          })
+          }),
         );
         this.dataset.chemicalLoading = "false";
       });

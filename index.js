@@ -17,6 +17,8 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
+import { default as aeroPath, aeroExtrasPath } from "aero-proxy";
+import aeroSandboxPath from "aero-sandbox/path.js";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
 import { meteorPath } from "meteorproxy";
 import {
@@ -42,6 +44,10 @@ class ChemicalServer {
 
     if (options.uv === undefined) {
       options.uv = true;
+    }
+
+    if (options.aero === undefined) {
+      options.aero = false;
     }
 
     if (options.experimental === undefined) {
@@ -75,13 +81,13 @@ class ChemicalServer {
     this.app.get("/chemical.js", async (req, res) => {
       let chemicalMain = await readFileSync(
         resolve(__dirname, "client/chemical.js"),
-        "utf8"
+        "utf8",
       );
 
       if (this.options.default) {
         if (
-          ["uv", "rammerhead", "scramjet", "meteor"].includes(
-            this.options.default
+          ["uv", "aero", "rammerhead", "scramjet", "meteor"].includes(
+            this.options.default,
           )
         ) {
           chemicalMain =
@@ -97,6 +103,11 @@ class ChemicalServer {
 
       chemicalMain =
         "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain;
+      chemicalMain =
+        "const aeroEnabled = " +
+        String(this.options.aero) +
+        ";\n" +
+        chemicalMain;
       chemicalMain =
         "const scramjetEnabled = " +
         String(this.options.experimental.scramjet) +
@@ -121,11 +132,13 @@ class ChemicalServer {
     this.app.get("/chemical.sw.js", async (req, res) => {
       let chemicalSW = await readFileSync(
         resolve(__dirname, "client/chemical.sw.js"),
-        "utf8"
+        "utf8",
       );
 
       chemicalSW =
         "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW;
+      chemicalSW =
+        "const aeroEnabled = " + String(this.options.aero) + ";\n" + chemicalSW;
       chemicalSW =
         "const scramjetEnabled = " +
         String(this.options.experimental.scramjet) +
@@ -153,17 +166,20 @@ class ChemicalServer {
       this.app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
       this.app.use("/uv/", express.static(uvPath));
     }
+    if (this.options.aero) {
+      express.static(resolve(__dirname, "config/aero"));
+    }
     if (this.options.experimental.scramjet) {
       this.app.use(
         "/scramjet/",
-        express.static(resolve(__dirname, "config/scramjet"))
+        express.static(resolve(__dirname, "config/scramjet")),
       );
       this.app.use("/scramjet/", express.static(scramjetPath));
     }
     if (this.options.experimental.meteor) {
       this.app.use(
         "/meteor/",
-        express.static(resolve(__dirname, "config/meteor"))
+        express.static(resolve(__dirname, "config/meteor")),
       );
       this.app.use("/meteor/", express.static(meteorPath));
     }
@@ -210,14 +226,16 @@ const ChemicalVitePlugin = (options) => ({
       options.uv = true;
     }
 
+    if (options.aero === undefined) {
+      options.aero = false;
+    }
+
     if (options.experimental === undefined) {
       options.experimental = {};
     }
-
     if (options.experimental.scramjet === undefined) {
       options.experimental.scramjet = false;
     }
-
     if (options.experimental.meteor === undefined) {
       options.experimental.meteor = false;
     }
@@ -234,12 +252,14 @@ const ChemicalVitePlugin = (options) => ({
     app.get("/chemical.js", async function (req, res) {
       let chemicalMain = await readFileSync(
         resolve(__dirname, "client/chemical.js"),
-        "utf8"
+        "utf8",
       );
 
       if (options.default) {
         if (
-          ["uv", "rammerhead", "scramjet", "meteor"].includes(options.default)
+          ["uv", "aero", "rammerhead", "scramjet", "meteor"].includes(
+            options.default,
+          )
         ) {
           chemicalMain =
             `const defaultService = "${options.default}";\n\n` + chemicalMain;
@@ -253,6 +273,8 @@ const ChemicalVitePlugin = (options) => ({
 
       chemicalMain =
         "const uvEnabled = " + String(options.uv) + ";\n" + chemicalMain;
+      chemicalMain =
+        "const aeroEnabled = " + String(options.aero) + ";\n" + chemicalMain;
       chemicalMain =
         "const scramjetEnabled = " +
         String(options.experimental.scramjet) +
@@ -277,11 +299,13 @@ const ChemicalVitePlugin = (options) => ({
     app.get("/chemical.sw.js", async function (req, res) {
       let chemicalSW = await readFileSync(
         resolve(__dirname, "client/chemical.sw.js"),
-        "utf8"
+        "utf8",
       );
 
       chemicalSW =
         "const uvEnabled = " + String(options.uv) + ";\n" + chemicalSW;
+      chemicalSW =
+        "const aeroEnabled = " + String(options.aero) + ";\n" + chemicalSW;
       chemicalSW =
         "const scramjetEnabled = " +
         String(options.experimental.scramjet) +
@@ -309,10 +333,14 @@ const ChemicalVitePlugin = (options) => ({
       app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
       app.use("/uv/", express.static(uvPath));
     }
+    if (options.aero) {
+      app.use("/aero/", express.static(resolve(__dirname, "config/aero")));
+      app.use("/aero/", express.static(aeroPath));
+    }
     if (options.experimental.scramjet) {
       app.use(
         "/scramjet/",
-        express.static(resolve(__dirname, "config/scramjet"))
+        express.static(resolve(__dirname, "config/scramjet")),
       );
       app.use("/scramjet/", express.static(scramjetPath));
     }
@@ -382,6 +410,9 @@ class ChemicalBuild {
     if (options.uv === undefined) {
       options.uv = true;
     }
+    if (options.aero == undefined) {
+      options.aero = false;
+    }
 
     if (options.experimental === undefined) {
       options.experimental = {};
@@ -407,20 +438,20 @@ class ChemicalBuild {
     } else {
       if (deletePath) {
         readdirSync(resolve(this.options.path)).forEach((file) =>
-          rmSync(resolve(this.options.path, file), { recursive: true })
+          rmSync(resolve(this.options.path, file), { recursive: true }),
         );
       }
     }
 
     let chemicalMain = await readFileSync(
       resolve(__dirname, "client/chemical.js"),
-      "utf8"
+      "utf8",
     );
 
     if (this.options.default) {
       if (
-        ["uv", "rammerhead", "scramjet", "meteor"].includes(
-          this.options.default
+        ["uv", "aero", "rammerhead", "scramjet", "meteor"].includes(
+          this.options.default,
         )
       ) {
         chemicalMain =
@@ -436,6 +467,8 @@ class ChemicalBuild {
 
     chemicalMain =
       "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalMain;
+    chemicalMain =
+      "const aeroEnabled = " + String(this.options.aero) + ";\n" + chemicalMain;
     chemicalMain =
       "const scramjetEnabled = " +
       String(this.options.experimental.scramjet) +
@@ -458,11 +491,13 @@ class ChemicalBuild {
 
     let chemicalSW = await readFileSync(
       resolve(__dirname, "client/chemical.sw.js"),
-      "utf8"
+      "utf8",
     );
 
     chemicalSW =
       "const uvEnabled = " + String(this.options.uv) + ";\n" + chemicalSW;
+    chemicalSw =
+      "const aeroEnabled = " + String(this.options.aero) + ";\n" + chemicalSW;
     chemicalSW =
       "const scramjetEnabled = " +
       String(this.options.experimental.scramjet) +
@@ -495,7 +530,21 @@ class ChemicalBuild {
       cpSync(uvPath, resolve(this.options.path, "uv"), { recursive: true });
       copyFileSync(
         resolve(__dirname, "config/uv/uv.config.js"),
-        resolve(this.options.path, "uv/uv.config.js")
+        resolve(this.options.path, "uv/uv.config.js"),
+      );
+    }
+    if (this.options.aero) {
+      cpSync(aeroPath, resolve(this.options.path, "aero"), { recursive: true });
+      cpSync(aeroPath, resolve(this.options.path, "aero", "sandbox"), {
+        recursive: true,
+      });
+      copyFileSync(
+        resolve(__dirname, "config/aero/config.aero.js"),
+        resolve(this.options.path, "aero/config.aero.js"),
+      );
+      copyFileSync(
+        resolve(__dirname, "config/aero/sandbox/config.aero.js"),
+        resolve(this.options.path, "aero/sandbox/config.aero.js"),
       );
     }
     if (this.options.experimental.scramjet) {
@@ -504,7 +553,7 @@ class ChemicalBuild {
       });
       copyFileSync(
         resolve(__dirname, "config/scramjet/scramjet.config.js"),
-        resolve(this.options.path, "scramjet/scramjet.config.js")
+        resolve(this.options.path, "scramjet/scramjet.config.js"),
       );
     }
     if (this.options.experimental.meteor) {
@@ -513,7 +562,7 @@ class ChemicalBuild {
       });
       copyFileSync(
         resolve(__dirname, "config/meteor/meteor.config.js"),
-        resolve(this.options.path, "meteor/meteor.config.js")
+        resolve(this.options.path, "meteor/meteor.config.js"),
       );
     }
   }
