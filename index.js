@@ -336,6 +336,8 @@ const ChemicalVitePlugin = (options) => ({
     if (options.aero) {
       app.use("/aero/", express.static(resolve(__dirname, "config/aero")));
       app.use("/aero/", express.static(aeroPath));
+      app.use("/aero/extras", express.static(aeroExtrasPath));
+      app.use("/aero/sandbox", express.static(aeroSandboxPath));
     }
     if (options.experimental.scramjet) {
       app.use(
