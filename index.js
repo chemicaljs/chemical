@@ -19,12 +19,7 @@ import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
 import { meteorPath } from "meteorproxy";
-import {
-  createRammerhead,
-  shouldRouteRh,
-  routeRhUpgrade,
-  routeRhRequest,
-} from "@rubynetwork/rammerhead";
+import createRammerhead from "rammerhead/src/server/index.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 logging.set_level(logging.ERROR);
@@ -68,9 +63,37 @@ class ChemicalServer {
     return [this.app, this.listen];
   }
   serveChemical = () => {
-    const rh = createRammerhead({
-      logLevel: "error",
-    });
+    const rh = createRammerhead();
+    const rammerheadScopes = [
+      "/rammerhead.js",
+      "/hammerhead.js",
+      "/transport-worker.js",
+      "/task.js",
+      "/iframe-task.js",
+      "/worker-hammerhead.js",
+      "/messaging",
+      "/sessionexists",
+      "/deletesession",
+      "/newsession",
+      "/editsession",
+      "/needpassword",
+      "/syncLocalStorage",
+      "/api/shuffleDict",
+    ];
+    const rammerheadSession = /^\/[a-z0-9]{32}/;
+    const shouldRouteRh = (req) => {
+      const url = new URL(req.url, "http://0.0.0.0");
+      return (
+        rammerheadScopes.includes(url.pathname) ||
+        rammerheadSession.test(url.pathname)
+      );
+    };
+    const routeRhRequest = (req, res) => {
+      rh.emit("request", req, res);
+    };
+    const routeRhUpgrade = (req, socket, head) => {
+      rh.emit("upgrade", req, socket, head);
+    };
 
     this.app.get("/chemical.js", async (req, res) => {
       let chemicalMain = await readFileSync(
@@ -169,7 +192,7 @@ class ChemicalServer {
     }
     this.server.on("request", (req, res) => {
       if (this.options.rammerhead && shouldRouteRh(req)) {
-        routeRhRequest(rh, req, res);
+        routeRhRequest(req, res);
       } else {
         this.app(req, res);
       }
@@ -183,7 +206,7 @@ class ChemicalServer {
         }
         wisp.routeRequest(req, socket, head);
       } else if (this.options.rammerhead && shouldRouteRh(req)) {
-        routeRhUpgrade(rh, req, socket, head);
+        routeRhUpgrade(req, socket, head);
       } else {
         socket.end();
       }
@@ -226,9 +249,37 @@ const ChemicalVitePlugin = (options) => ({
       options.rammerhead = true;
     }
 
-    const rh = createRammerhead({
-      logLevel: "error",
-    });
+    const rh = createRammerhead();
+    const rammerheadScopes = [
+      "/rammerhead.js",
+      "/hammerhead.js",
+      "/transport-worker.js",
+      "/task.js",
+      "/iframe-task.js",
+      "/worker-hammerhead.js",
+      "/messaging",
+      "/sessionexists",
+      "/deletesession",
+      "/newsession",
+      "/editsession",
+      "/needpassword",
+      "/syncLocalStorage",
+      "/api/shuffleDict",
+    ];
+    const rammerheadSession = /^\/[a-z0-9]{32}/;
+    const shouldRouteRh = (req) => {
+      const url = new URL(req.url, "http://0.0.0.0");
+      return (
+        rammerheadScopes.includes(url.pathname) ||
+        rammerheadSession.test(url.pathname)
+      );
+    };
+    const routeRhRequest = (req, res) => {
+      rh.emit("request", req, res);
+    };
+    const routeRhUpgrade = (req, socket, head) => {
+      rh.emit("upgrade", req, socket, head);
+    };
 
     const app = express();
     app.get("/chemical.js", async function (req, res) {
@@ -325,7 +376,7 @@ const ChemicalVitePlugin = (options) => ({
 
     server.middlewares.use((req, res, next) => {
       if (options.rammerhead && shouldRouteRh(req)) {
-        routeRhRequest(rh, req, res);
+        routeRhRequest(req, res);
       } else {
         next();
       }
@@ -346,7 +397,7 @@ const ChemicalVitePlugin = (options) => ({
         }
         wisp.routeRequest(req, socket, head);
       } else if (options.rammerhead && shouldRouteRh(req)) {
-        routeRhUpgrade(rh, req, socket, head);
+        routeRhUpgrade(req, socket, head);
       } else {
         for (const upgrader of upgraders) {
           upgrader(req, socket, head);
