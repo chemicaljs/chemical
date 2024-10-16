@@ -12,8 +12,8 @@ if (scramjetEnabled) {
 if (meteorEnabled) {
   importScripts("/meteor/meteor.codecs.js");
   importScripts("/meteor/meteor.config.js");
-  importScripts($meteor.config.files.bundle || "/meteor/meteor.bundle.js");
-  importScripts($meteor.config.files.worker || "/meteor/meteor.worker.js");
+  importScripts($meteor_config.files.bundle || "/meteor/meteor.bundle.js");
+  importScripts($meteor_config.files.worker || "/meteor/meteor.worker.js");
 }
 
 Object.defineProperty(self, "crossOriginIsolated", { value: true }); // Firefox fix
