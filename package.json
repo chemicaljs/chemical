@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Easily create your own web proxy with no experience required.",
   "repository": {
     "type": "git",
@@ -14,12 +14,12 @@
     "update": "npx npm-check-updates -u && npm i"
   },
   "dependencies": {
-    "@mercuryworkshop/bare-mux": "^2.1.2",
-    "@mercuryworkshop/epoxy-transport": "^2.1.17",
-    "@mercuryworkshop/libcurl-transport": "^1.3.10",
+    "@mercuryworkshop/bare-mux": "^2.1.6",
+    "@mercuryworkshop/epoxy-transport": "^2.1.25",
+    "@mercuryworkshop/libcurl-transport": "^1.3.12",
     "@mercuryworkshop/scramjet": "^1.0.2",
     "@mercuryworkshop/wisp-js": "^0.3.2",
-    "@titaniumnetwork-dev/ultraviolet": "^3.2.7",
+    "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
     "express": "^4.21.1",
     "meteorproxy": "^1.0.6-patch.1",
     "rammerhead": "https://github.com/chemicaljs/chemical/raw/main/rammerhead.tgz"

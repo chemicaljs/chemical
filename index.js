@@ -55,6 +55,10 @@ class ChemicalServer {
       options.rammerhead = true;
     }
 
+    if (options.demoMode === undefined) {
+      options.demoMode = false;
+    }
+
     this.options = options;
     this.server = createServer();
     this.app = express();
@@ -133,6 +137,11 @@ class ChemicalServer {
       chemicalMain =
         "const rammerheadEnabled = " +
         String(this.options.rammerhead) +
+        ";\n" +
+        chemicalMain;
+      chemicalMain =
+        "const demoMode = " +
+        String(this.options.demoMode) +
         ";\n" +
         chemicalMain;
 
@@ -249,6 +258,10 @@ const ChemicalVitePlugin = (options) => ({
       options.rammerhead = true;
     }
 
+    if (options.demoMode === undefined) {
+      options.demoMode = false;
+    }
+
     const rh = createRammerhead();
     const rammerheadScopes = [
       "/rammerhead.js",
@@ -319,6 +332,8 @@ const ChemicalVitePlugin = (options) => ({
         String(options.rammerhead) +
         ";\n" +
         chemicalMain;
+      chemicalMain =
+        "const demoMode = " + String(options.demoMode) + ";\n" + chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
@@ -450,6 +465,10 @@ class ChemicalBuild {
       options.rammerhead = true;
     }
 
+    if (options.demoMode === undefined) {
+      options.demoMode = false;
+    }
+
     this.options = options;
   }
   async write(deletePath = false) {
@@ -500,6 +519,11 @@ class ChemicalBuild {
     chemicalMain =
       "const rammerheadEnabled = " +
       String(this.options.rammerhead) +
+      ";\n" +
+      chemicalMain;
+    chemicalMain =
+      "const demoMode = " +
+      String(this.options.demoMode) +
       ";\n" +
       chemicalMain;
 

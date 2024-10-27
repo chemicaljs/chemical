@@ -2,6 +2,7 @@ const currentScript = document.currentScript;
 
 window.chemical = {
   loaded: false,
+  demoMode,
   transport:
     currentScript.dataset.transportStore !== undefined
       ? localStorage.getItem("@chemical/transport") ||
@@ -262,6 +263,10 @@ window.chemical.encode = async function (url, config) {
 
   if (config.autoHttps === undefined) {
     config.autoHttps = false;
+  }
+
+  if (demoMode) {
+    return "/chemical.demo.html";
   }
 
   if (url.match(/^https?:\/\//)) {
