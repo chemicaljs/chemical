@@ -17,7 +17,7 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
-import { scramjetPath } from "@mercuryworkshop/scramjet";
+import { scramjetPath } from "./scramjet/index.js";
 import createRammerhead from "rammerhead/src/server/index.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -163,10 +163,6 @@ class ChemicalServer {
       this.app.use("/uv/", express.static(uvPath));
     }
     if (this.options.scramjet) {
-      this.app.use(
-        "/scramjet/",
-        express.static(resolve(__dirname, "config/scramjet"))
-      );
       this.app.use("/scramjet/", express.static(scramjetPath));
     }
     this.server.on("request", (req, res) => {
@@ -326,10 +322,6 @@ const ChemicalVitePlugin = (options) => ({
       app.use("/uv/", express.static(uvPath));
     }
     if (options.scramjet) {
-      app.use(
-        "/scramjet/",
-        express.static(resolve(__dirname, "config/scramjet"))
-      );
       app.use("/scramjet/", express.static(scramjetPath));
     }
     server.middlewares.use(app);
@@ -494,15 +486,6 @@ class ChemicalBuild {
       copyFileSync(
         resolve(__dirname, "config/uv/uv.config.js"),
         resolve(this.options.path, "uv/uv.config.js")
-      );
-    }
-    if (this.options.scramjet) {
-      cpSync(scramjetPath, resolve(this.options.path, "scramjet"), {
-        recursive: true,
-      });
-      copyFileSync(
-        resolve(__dirname, "config/scramjet/scramjet.config.js"),
-        resolve(this.options.path, "scramjet/scramjet.config.js")
       );
     }
   }

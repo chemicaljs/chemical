@@ -4,13 +4,17 @@ if (uvEnabled) {
   importScripts(__uv$config.sw || "/uv/uv.sw.js");
 }
 if (scramjetEnabled) {
-  importScripts("/scramjet/scramjet.codecs.js");
-  importScripts("/scramjet/scramjet.config.js");
-  importScripts(__scramjet$config.bundle || "/scramjet/scramjet.bundle.js");
-  importScripts(__scramjet$config.worker || "/scramjet/scramjet.worker.js");
+  importScripts("/scramjet/scramjet.wasm.js");
+  importScripts("/scramjet/scramjet.shared.js");
+  importScripts("/scramjet/scramjet.worker.js");
 }
 
-Object.defineProperty(self, "crossOriginIsolated", { value: true }); // Firefox fix
+if (navigator.userAgent.includes("Firefox")) {
+  Object.defineProperty(globalThis, "crossOriginIsolated", {
+    value: true,
+    writable: false,
+  });
+}
 
 let uv, scramjet;
 
@@ -24,6 +28,10 @@ if (scramjetEnabled) {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     (async () => {
+      if (scramjetEnabled) {
+        await scramjet.loadConfig();
+      }
+
       if (uvEnabled && uv.route(event)) {
         return await uv.fetch(event);
       } else if (scramjetEnabled && scramjet.route(event)) {

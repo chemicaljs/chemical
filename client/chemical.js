@@ -230,11 +230,7 @@ async function encodeService(url, service) {
       break;
     case "scramjet":
       if (scramjetEnabled) {
-        return (
-          window.location.origin +
-          __scramjet$config.prefix +
-          __scramjet$config.codec.encode(url)
-        );
+        return window.location.origin + chemical.scramjet.encodeUrl(url);
       }
       break;
   }
@@ -301,9 +297,7 @@ window.chemical.decode = async function (url, config) {
       break;
     case "scramjet":
       if (scramjetEnabled) {
-        return __scramjet$config.codec.decode(
-          url.split(__scramjet$config.prefix)[1]
-        );
+        return $scramjet.codec.decode(url.split($scramjet.config.prefix)[1]);
       }
       break;
   }
@@ -447,8 +441,19 @@ if (uvEnabled) {
   await loadScript("/uv/uv.config.js");
 }
 if (scramjetEnabled) {
-  await loadScript("/scramjet/scramjet.codecs.js");
-  await loadScript("/scramjet/scramjet.config.js");
+  await loadScript("/scramjet/scramjet.shared.js");
+  await loadScript("/scramjet/scramjet.controller.js");
+  chemical.scramjet = new ScramjetController({
+    prefix: "/~/scramjet/",
+    files: {
+      wasm: "/scramjet/scramjet.wasm.js",
+      worker: "/scramjet/scramjet.worker.js",
+      client: "/scramjetetscramjet.client.js",
+      shared: "/scramjetetscramjet.shared.js",
+      sync: "/scramjet/scramjet.sync.js",
+    },
+  });
+  chemical.scramjet.init("/chemical.sw.js");
 }
 window.chemical.connection = new window.BareMux.BareMuxConnection(
   "/baremux/worker.js"
