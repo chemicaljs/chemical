@@ -471,6 +471,13 @@ class ChemicalBuild {
 
     writeFileSync(resolve(this.options.path, "chemical.sw.js"), chemicalSW);
 
+    if (this.options.demoMode) {
+      copyFileSync(
+        resolve(__dirname, "client/chemical.demo.html"),
+        resolve(this.options.path, "chemical.demo.html")
+      );
+    }
+
     cpSync(baremuxPath, resolve(this.options.path, "baremux"), {
       recursive: true,
     });
