@@ -237,15 +237,6 @@ async function encodeService(url, service) {
         );
       }
       break;
-    case "meteor":
-      if (meteorEnabled) {
-        return (
-          window.location.origin +
-          $meteor_config.prefix +
-          $meteor_config.codec.encode(url)
-        );
-      }
-      break;
   }
 }
 
@@ -313,11 +304,6 @@ window.chemical.decode = async function (url, config) {
         return __scramjet$config.codec.decode(
           url.split(__scramjet$config.prefix)[1]
         );
-      }
-      break;
-    case "meteor":
-      if (meteorEnabled) {
-        return $meteor_config.codec.decode(url.split($meteor_config.prefix)[1]);
       }
       break;
   }
@@ -463,10 +449,6 @@ if (uvEnabled) {
 if (scramjetEnabled) {
   await loadScript("/scramjet/scramjet.codecs.js");
   await loadScript("/scramjet/scramjet.config.js");
-}
-if (meteorEnabled) {
-  await loadScript("/meteor/meteor.codecs.js");
-  await loadScript("/meteor/meteor.config.js");
 }
 window.chemical.connection = new window.BareMux.BareMuxConnection(
   "/baremux/worker.js"
