@@ -17,7 +17,7 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
-import { scramjetPath } from "./scramjet/index.js";
+import { scramjetPath } from "@mercuryworkshop/scramjet";
 import createRammerhead from "rammerhead/src/server/index.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
