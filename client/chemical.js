@@ -448,8 +448,8 @@ if (scramjetEnabled) {
     files: {
       wasm: "/scramjet/scramjet.wasm.js",
       worker: "/scramjet/scramjet.worker.js",
-      client: "/scramjetetscramjet.client.js",
-      shared: "/scramjetetscramjet.shared.js",
+      client: "/scramjet/scramjet.client.js",
+      shared: "/scramjet/scramjet.shared.js",
       sync: "/scramjet/scramjet.sync.js",
     },
   });
