@@ -1,17 +1,36 @@
 {
   "name": "chemicaljs",
-  "version": "2.3.1",
+  "version": "2.4.1",
   "description": "Easily create your own web proxy with no experience required.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "client",
+    "config"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chemicaljs/chemical.git"
   },
-  "main": "index.js",
-  "type": "module",
   "author": "Nebelung",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "update": "npx npm-check-updates -u && npm i"
+    "update": "npx npm-check-updates -u && npm i",
+    "build": "tsup",
+    "publish": "npm publish --access public"
   },
   "dependencies": {
     "@mercuryworkshop/bare-mux": "^2.1.6",
@@ -21,9 +40,15 @@
     "@mercuryworkshop/wisp-js": "^0.3.3",
     "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
     "express": "^4.21.1",
-    "rammerhead": "https://github.com/chemicaljs/chemical/raw/main/rammerhead.tgz"
+    "rammerhead": "https://github.com/chemicaljs/chemical/raw/main/rammerhead.tgz",
+    "tsc": "^2.0.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
   },
   "engines": {
     "node": ">=20.11.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5"
   }
 }

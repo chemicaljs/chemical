@@ -1,4 +1,4 @@
-import { resolve, dirname } from "node:path";
+import { resolve } from "node:path";
 import {
   readFileSync,
   cpSync,
@@ -9,22 +9,67 @@ import {
   rmSync,
   readdirSync,
 } from "node:fs";
-import { createServer } from "node:http";
-import { fileURLToPath } from "node:url";
-import express from "express";
+import { createServer, Server } from "node:http";
+import { Socket } from "node:net";
+import express, { Request, Response, application, Next } from "express";
+//@ts-ignore
 import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
+//@ts-ignore
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
-import createRammerhead from "rammerhead/src/server/index.js";
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import createRammerhead, { RammerheadProxy } from "rammerhead/src/server/index.js";
+import { ViteDevServer } from "vite";
 
 logging.set_level(logging.ERROR);
 
+interface WispOptions {
+  hostname_blacklist?: Array<RegExp>;
+  hostname_whitelist?: Array<RegExp>;
+  port_blacklist?: (number | Array<number>)[];
+  port_whitelist?: (number | Array<number>)[];
+  allow_direct_ip?: boolean;
+  allow_private_ips?: boolean;
+  allow_loopback_ips?: boolean;
+  stream_limit_per_host?: number;
+  stream_limit_total?: number;
+  allow_udp_streams?: boolean;
+  allow_tcp_streams?: boolean;
+  dns_ttl?: number;
+  dns_method?: "lookup" | "resolve";
+  dns_servers?: Array<string>;
+  dns_result_order?: "ipv4first" | "ipv6first" | "verbatim";
+  parse_real_ip?: boolean;
+  parse_real_ip_from?: Array<string>;
+}
+
+interface Options {
+  uv?: boolean;
+  scramjet?: boolean;
+  rammerhead?: boolean;
+  demoMode?: boolean;
+  default?: string;
+  wispOptions?: WispOptions;
+}
+
+interface BuildOptions extends Options {
+  path?: string;
+}
+
+interface ChemicalServer {
+  options: Options;
+  server: Server;
+  app: application;
+}
+
+interface ChemicalBuild {
+  options: BuildOptions;
+}
+
 class ChemicalServer {
-  constructor(options) {
+  constructor(options: Options) {
     if (options) {
       if (typeof options !== "object" || Array.isArray(options)) {
         options = {};
@@ -55,11 +100,11 @@ class ChemicalServer {
     this.app = express();
     this.app.serveChemical = this.serveChemical;
 
-    return [this.app, this.listen];
+    return [this.app, this.listen] as any;
   }
   serveChemical = () => {
-    const rh = createRammerhead();
-    const rammerheadScopes = [
+    const rh: RammerheadProxy = createRammerhead();
+    const rammerheadScopes: Array<string> = [
       "/rammerhead.js",
       "/hammerhead.js",
       "/transport-worker.js",
@@ -75,24 +120,24 @@ class ChemicalServer {
       "/syncLocalStorage",
       "/api/shuffleDict",
     ];
-    const rammerheadSession = /^\/[a-z0-9]{32}/;
-    const shouldRouteRh = (req) => {
+    const rammerheadSession: RegExp = /^\/[a-z0-9]{32}/;
+    const shouldRouteRh = (req: Request): boolean => {
       const url = new URL(req.url, "http://0.0.0.0");
       return (
         rammerheadScopes.includes(url.pathname) ||
         rammerheadSession.test(url.pathname)
       );
     };
-    const routeRhRequest = (req, res) => {
+    const routeRhRequest = (req: Request, res: Response) => {
       rh.emit("request", req, res);
     };
-    const routeRhUpgrade = (req, socket, head) => {
+    const routeRhUpgrade = (req: Request, socket: Socket, head: Buffer) => {
       rh.emit("upgrade", req, socket, head);
     };
 
-    this.app.get("/chemical.js", async (req, res) => {
+    this.app.get("/chemical.js", async (req: Request, res: Response) => {
       let chemicalMain = await readFileSync(
-        resolve(__dirname, "client/chemical.js"),
+        resolve(__dirname, "../client/chemical.js"),
         "utf8"
       );
 
@@ -132,9 +177,9 @@ class ChemicalServer {
       res.type("application/javascript");
       return res.send(chemicalMain);
     });
-    this.app.get("/chemical.sw.js", async (req, res) => {
+    this.app.get("/chemical.sw.js", async (req: Request, res: Response) => {
       let chemicalSW = await readFileSync(
-        resolve(__dirname, "client/chemical.sw.js"),
+        resolve(__dirname, "../client/chemical.sw.js"),
         "utf8"
       );
 
@@ -154,7 +199,7 @@ class ChemicalServer {
       res.type("application/javascript");
       return res.send(chemicalSW);
     });
-    this.app.use(express.static(resolve(__dirname, "client")));
+    this.app.use(express.static(resolve(__dirname, "../client")));
     this.app.use("/baremux/", express.static(baremuxPath));
     this.app.use("/libcurl/", express.static(libcurlPath));
     this.app.use("/epoxy/", express.static(epoxyPath));
@@ -165,17 +210,18 @@ class ChemicalServer {
     if (this.options.scramjet) {
       this.app.use("/scramjet/", express.static(scramjetPath));
     }
-    this.server.on("request", (req, res) => {
+    this.server.on("request", (req: Request, res: Response) => {
       if (this.options.rammerhead && shouldRouteRh(req)) {
         routeRhRequest(req, res);
       } else {
         this.app(req, res);
       }
     });
-    this.server.on("upgrade", (req, socket, head) => {
+    this.server.on("upgrade", (req: Request, socket: Socket, head: Buffer) => {
       if (req.url && req.url.endsWith("/wisp/")) {
         if (this.options.wispOptions) {
           for (let option in this.options.wispOptions) {
+            //@ts-ignore
             wisp.options[option] = this.options.wispOptions[option];
           }
         }
@@ -187,14 +233,14 @@ class ChemicalServer {
       }
     });
   };
-  listen = (port, callback) => {
+  listen = (port: number, callback: () => void) => {
     this.server.listen(port, callback);
   };
 }
 
-const ChemicalVitePlugin = (options) => ({
+const ChemicalVitePlugin = (options: Options) => ({
   name: "chemical-vite-plugin",
-  configureServer(server) {
+  configureServer(server: ViteDevServer) {
     if (options) {
       if (typeof options !== "object" || Array.isArray(options)) {
         options = {};
@@ -220,8 +266,8 @@ const ChemicalVitePlugin = (options) => ({
       options.demoMode = false;
     }
 
-    const rh = createRammerhead();
-    const rammerheadScopes = [
+    const rh: RammerheadProxy = createRammerhead();
+    const rammerheadScopes: Array<string> = [
       "/rammerhead.js",
       "/hammerhead.js",
       "/transport-worker.js",
@@ -237,25 +283,25 @@ const ChemicalVitePlugin = (options) => ({
       "/syncLocalStorage",
       "/api/shuffleDict",
     ];
-    const rammerheadSession = /^\/[a-z0-9]{32}/;
-    const shouldRouteRh = (req) => {
-      const url = new URL(req.url, "http://0.0.0.0");
+    const rammerheadSession: RegExp = /^\/[a-z0-9]{32}/;
+    const shouldRouteRh = (req: Request): boolean => {
+      const url: URL = new URL(req.url, "http://0.0.0.0");
       return (
         rammerheadScopes.includes(url.pathname) ||
         rammerheadSession.test(url.pathname)
       );
     };
-    const routeRhRequest = (req, res) => {
+    const routeRhRequest = (req: Request, res: Response) => {
       rh.emit("request", req, res);
     };
-    const routeRhUpgrade = (req, socket, head) => {
+    const routeRhUpgrade = (req: Request, socket: Socket, head: Buffer) => {
       rh.emit("upgrade", req, socket, head);
     };
 
-    const app = express();
-    app.get("/chemical.js", async function (req, res) {
-      let chemicalMain = await readFileSync(
-        resolve(__dirname, "client/chemical.js"),
+    const app: application = express();
+    app.get("/chemical.js", async function (req: Request, res: Response) {
+      let chemicalMain: string = await readFileSync(
+        resolve(__dirname, "../client/chemical.js"),
         "utf8"
       );
 
@@ -291,9 +337,9 @@ const ChemicalVitePlugin = (options) => ({
       res.type("application/javascript");
       return res.send(chemicalMain);
     });
-    app.get("/chemical.sw.js", async function (req, res) {
-      let chemicalSW = await readFileSync(
-        resolve(__dirname, "client/chemical.sw.js"),
+    app.get("/chemical.sw.js", async function (req: Request, res: Response) {
+      let chemicalSW: string = await readFileSync(
+        resolve(__dirname, "../client/chemical.sw.js"),
         "utf8"
       );
 
@@ -313,7 +359,7 @@ const ChemicalVitePlugin = (options) => ({
       res.type("application/javascript");
       return res.send(chemicalSW);
     });
-    app.use(express.static(resolve(__dirname, "client")));
+    app.use(express.static(resolve(__dirname, "../client")));
     app.use("/baremux/", express.static(baremuxPath));
     app.use("/libcurl/", express.static(libcurlPath));
     app.use("/epoxy/", express.static(epoxyPath));
@@ -326,7 +372,7 @@ const ChemicalVitePlugin = (options) => ({
     }
     server.middlewares.use(app);
 
-    server.middlewares.use((req, res, next) => {
+    server.middlewares.use((req: Request, res: Request, next: Next) => {
       if (options.rammerhead && shouldRouteRh(req)) {
         routeRhRequest(req, res);
       } else {
@@ -334,33 +380,37 @@ const ChemicalVitePlugin = (options) => ({
       }
     });
 
-    const upgraders = server.httpServer.listeners("upgrade");
+    const upgraders = server.httpServer?.listeners("upgrade") as ((...args: any[]) => void)[];
 
     for (const upgrader of upgraders) {
-      server.httpServer.off("upgrade", upgrader);
+      server?.httpServer?.off("upgrade", upgrader);
     }
 
-    server.httpServer.on("upgrade", (req, socket, head) => {
-      if (req.url && req.url.endsWith("/wisp/")) {
-        if (options.wispOptions) {
-          for (let option in options.wispOptions) {
-            wisp.options[option] = options.wispOptions[option];
+    server?.httpServer?.on(
+      "upgrade",
+      (req: Request, socket: Socket, head: Buffer) => {
+        if (req.url && req.url.endsWith("/wisp/")) {
+          if (options.wispOptions) {
+            for (let option in options.wispOptions) {
+              //@ts-ignore
+              wisp.options[option] = options.wispOptions[option];
+            }
+          }
+          wisp.routeRequest(req, socket, head);
+        } else if (options.rammerhead && shouldRouteRh(req)) {
+          routeRhUpgrade(req, socket, head);
+        } else {
+          for (const upgrader of upgraders) {
+            upgrader(req, socket, head);
           }
         }
-        wisp.routeRequest(req, socket, head);
-      } else if (options.rammerhead && shouldRouteRh(req)) {
-        routeRhUpgrade(req, socket, head);
-      } else {
-        for (const upgrader of upgraders) {
-          upgrader(req, socket, head);
-        }
       }
-    });
+    );
   },
 });
 
 class ChemicalBuild {
-  constructor(options) {
+  constructor(options: BuildOptions) {
     if (options) {
       if (typeof options !== "object" || Array.isArray(options)) {
         options = {};
@@ -400,19 +450,19 @@ class ChemicalBuild {
 
     this.options = options;
   }
-  async write(deletePath = false) {
-    if (!existsSync(resolve(this.options.path))) {
-      mkdirSync(resolve(this.options.path), { recursive: true });
+  async write(deletePath: boolean = false) {
+    if (!existsSync(resolve(this.options.path || ""))) {
+      mkdirSync(resolve(this.options.path || ""), { recursive: true });
     } else {
       if (deletePath) {
-        readdirSync(resolve(this.options.path)).forEach((file) =>
-          rmSync(resolve(this.options.path, file), { recursive: true })
+        readdirSync(resolve(this.options.path || "")).forEach((file) =>
+          rmSync(resolve(this.options.path || "", file), { recursive: true })
         );
       }
     }
 
-    let chemicalMain = await readFileSync(
-      resolve(__dirname, "client/chemical.js"),
+    let chemicalMain: string = await readFileSync(
+      resolve(__dirname, "../client/chemical.js"),
       "utf8"
     );
 
@@ -449,10 +499,10 @@ class ChemicalBuild {
 
     chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
-    writeFileSync(resolve(this.options.path, "chemical.js"), chemicalMain);
+    writeFileSync(resolve(this.options.path || "", "chemical.js"), chemicalMain);
 
-    let chemicalSW = await readFileSync(
-      resolve(__dirname, "client/chemical.sw.js"),
+    let chemicalSW: string = await readFileSync(
+      resolve(__dirname, "../client/chemical.sw.js"),
       "utf8"
     );
 
@@ -469,30 +519,30 @@ class ChemicalBuild {
       ";\n" +
       chemicalSW;
 
-    writeFileSync(resolve(this.options.path, "chemical.sw.js"), chemicalSW);
+    writeFileSync(resolve(this.options.path || "", "chemical.sw.js"), chemicalSW);
 
     if (this.options.demoMode) {
       copyFileSync(
         resolve(__dirname, "client/chemical.demo.html"),
-        resolve(this.options.path, "chemical.demo.html")
+        resolve(this.options.path || "", "chemical.demo.html")
       );
     }
 
-    cpSync(baremuxPath, resolve(this.options.path, "baremux"), {
+    cpSync(baremuxPath, resolve(this.options.path || "", "baremux"), {
       recursive: true,
     });
-    cpSync(libcurlPath, resolve(this.options.path, "libcurl"), {
+    cpSync(libcurlPath, resolve(this.options.path || "", "libcurl"), {
       recursive: true,
     });
-    cpSync(epoxyPath, resolve(this.options.path, "epoxy"), { recursive: true });
-    cpSync(libcurlPath, resolve(this.options.path, "libcurl"), {
+    cpSync(epoxyPath, resolve(this.options.path || "", "epoxy"), { recursive: true });
+    cpSync(libcurlPath, resolve(this.options.path || "", "libcurl"), {
       recursive: true,
     });
     if (this.options.uv) {
-      cpSync(uvPath, resolve(this.options.path, "uv"), { recursive: true });
+      cpSync(uvPath, resolve(this.options.path || "", "uv"), { recursive: true });
       copyFileSync(
         resolve(__dirname, "config/uv/uv.config.js"),
-        resolve(this.options.path, "uv/uv.config.js")
+        resolve(this.options.path || "", "uv/uv.config.js")
       );
     }
   }
