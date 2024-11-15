@@ -437,8 +437,8 @@ function setupFetch() {
 
 await loadScript("/baremux/index.js");
 if (uvEnabled) {
-  await loadScript("/uv/uv.bundle.js");
-  await loadScript("/uv/uv.config.js");
+  await loadScript(`/${uvRandomPath}/${uvRandomPath}.bundle.js`);
+  await loadScript(`/${uvRandomPath}/${uvRandomPath}.config.js`);
 }
 if (scramjetEnabled) {
   await loadScript("/scramjet/scramjet.shared.js");

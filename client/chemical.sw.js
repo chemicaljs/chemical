@@ -1,7 +1,7 @@
 if (uvEnabled) {
-  importScripts("/uv/uv.bundle.js");
-  importScripts("/uv/uv.config.js");
-  importScripts(__uv$config.sw || "/uv/uv.sw.js");
+  importScripts(`/${uvRandomPath}/${uvRandomPath}.bundle.js`);
+  importScripts(`/${uvRandomPath}/${uvRandomPath}.config.js`);
+  importScripts(__uv$config.sw || `/${uvRandomPath}/${uvRandomPath}.sw.js`);
 }
 if (scramjetEnabled) {
   importScripts("/scramjet/scramjet.wasm.js");

@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "Easily create your own web proxy with no experience required.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -19,7 +19,8 @@
   "files": [
     "dist",
     "client",
-    "config"
+    "config",
+    "ultraviolet"
   ],
   "repository": {
     "type": "git",
@@ -29,7 +30,8 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "update": "npx npm-check-updates -u && npm i",
-    "build": "tsup",
+    "build-uv": "node build-uv.js",
+    "build": "npm run build-uv && tsup",
     "publish": "npm publish --access public"
   },
   "dependencies": {
@@ -40,6 +42,8 @@
     "@mercuryworkshop/wisp-js": "^0.3.3",
     "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
     "express": "^4.21.1",
+    "glob": "^11.0.0",
+    "nanoid": "^5.0.8",
     "rammerhead": "https://github.com/chemicaljs/chemical/raw/main/rammerhead.tgz",
     "tsc": "^2.0.4",
     "typescript": "^5.6.3",

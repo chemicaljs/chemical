@@ -18,9 +18,12 @@ import { server as wisp, logging } from "@mercuryworkshop/wisp-js/server";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
-import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
+import { uvPath } from "../ultraviolet/index.js";
+import { uvRandomPath } from "../ultraviolet/path.js";
 import { scramjetPath } from "@mercuryworkshop/scramjet";
-import createRammerhead, { RammerheadProxy } from "rammerhead/src/server/index.js";
+import createRammerhead, {
+  RammerheadProxy,
+} from "rammerhead/src/server/index.js";
 import { ViteDevServer } from "vite";
 
 logging.set_level(logging.ERROR);
@@ -69,7 +72,7 @@ interface ChemicalBuild {
 }
 
 class ChemicalServer {
-  constructor(options: Options) {
+  constructor(options: Options = {}) {
     if (options) {
       if (typeof options !== "object" || Array.isArray(options)) {
         options = {};
@@ -99,8 +102,9 @@ class ChemicalServer {
     this.server = createServer();
     this.app = express();
     this.app.serveChemical = this.serveChemical;
-
-    return [this.app, this.listen] as any;
+  }
+  [Symbol.iterator](): Iterator<application | Function> {
+    return [this.app, this.listen][Symbol.iterator]();
   }
   serveChemical = () => {
     const rh: RammerheadProxy = createRammerhead();
@@ -171,6 +175,8 @@ class ChemicalServer {
         String(this.options.demoMode) +
         ";\n" +
         chemicalMain;
+      chemicalMain =
+        `const uvRandomPath = "${String(uvRandomPath)}";\n` + chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
@@ -195,6 +201,8 @@ class ChemicalServer {
         String(this.options.rammerhead) +
         ";\n" +
         chemicalSW;
+      chemicalSW =
+        `const uvRandomPath = "${String(uvRandomPath)}";\n` + chemicalSW;
 
       res.type("application/javascript");
       return res.send(chemicalSW);
@@ -204,8 +212,7 @@ class ChemicalServer {
     this.app.use("/libcurl/", express.static(libcurlPath));
     this.app.use("/epoxy/", express.static(epoxyPath));
     if (this.options.uv) {
-      this.app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
-      this.app.use("/uv/", express.static(uvPath));
+      this.app.use(`/${uvRandomPath}/`, express.static(uvPath));
     }
     if (this.options.scramjet) {
       this.app.use("/scramjet/", express.static(scramjetPath));
@@ -331,6 +338,8 @@ const ChemicalVitePlugin = (options: Options) => ({
         chemicalMain;
       chemicalMain =
         "const demoMode = " + String(options.demoMode) + ";\n" + chemicalMain;
+      chemicalMain =
+        `const uvRandomPath = "${String(uvRandomPath)}";\n` + chemicalMain;
 
       chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
@@ -355,6 +364,8 @@ const ChemicalVitePlugin = (options: Options) => ({
         String(options.rammerhead) +
         ";\n" +
         chemicalSW;
+      chemicalSW =
+        `const uvRandomPath = "${String(uvRandomPath)}";\n` + chemicalSW;
 
       res.type("application/javascript");
       return res.send(chemicalSW);
@@ -364,8 +375,7 @@ const ChemicalVitePlugin = (options: Options) => ({
     app.use("/libcurl/", express.static(libcurlPath));
     app.use("/epoxy/", express.static(epoxyPath));
     if (options.uv) {
-      app.use("/uv/", express.static(resolve(__dirname, "config/uv")));
-      app.use("/uv/", express.static(uvPath));
+      app.use(`/${uvRandomPath}/`, express.static(uvPath));
     }
     if (options.scramjet) {
       app.use("/scramjet/", express.static(scramjetPath));
@@ -380,7 +390,9 @@ const ChemicalVitePlugin = (options: Options) => ({
       }
     });
 
-    const upgraders = server.httpServer?.listeners("upgrade") as ((...args: any[]) => void)[];
+    const upgraders = server.httpServer?.listeners("upgrade") as ((
+      ...args: any[]
+    ) => void)[];
 
     for (const upgrader of upgraders) {
       server?.httpServer?.off("upgrade", upgrader);
@@ -496,10 +508,15 @@ class ChemicalBuild {
       String(this.options.demoMode) +
       ";\n" +
       chemicalMain;
+    chemicalMain =
+      `const uvRandomPath = "${String(uvRandomPath)}";\n` + chemicalMain;
 
     chemicalMain = "(async () => {\n" + chemicalMain + "\n})();";
 
-    writeFileSync(resolve(this.options.path || "", "chemical.js"), chemicalMain);
+    writeFileSync(
+      resolve(this.options.path || "", "chemical.js"),
+      chemicalMain
+    );
 
     let chemicalSW: string = await readFileSync(
       resolve(__dirname, "../client/chemical.sw.js"),
@@ -518,8 +535,13 @@ class ChemicalBuild {
       String(this.options.rammerhead) +
       ";\n" +
       chemicalSW;
+    chemicalSW =
+      `const uvRandomPath = "${String(uvRandomPath)}";\n` + chemicalSW;
 
-    writeFileSync(resolve(this.options.path || "", "chemical.sw.js"), chemicalSW);
+    writeFileSync(
+      resolve(this.options.path || "", "chemical.sw.js"),
+      chemicalSW
+    );
 
     if (this.options.demoMode) {
       copyFileSync(
@@ -534,16 +556,16 @@ class ChemicalBuild {
     cpSync(libcurlPath, resolve(this.options.path || "", "libcurl"), {
       recursive: true,
     });
-    cpSync(epoxyPath, resolve(this.options.path || "", "epoxy"), { recursive: true });
+    cpSync(epoxyPath, resolve(this.options.path || "", "epoxy"), {
+      recursive: true,
+    });
     cpSync(libcurlPath, resolve(this.options.path || "", "libcurl"), {
       recursive: true,
     });
     if (this.options.uv) {
-      cpSync(uvPath, resolve(this.options.path || "", "uv"), { recursive: true });
-      copyFileSync(
-        resolve(__dirname, "config/uv/uv.config.js"),
-        resolve(this.options.path || "", "uv/uv.config.js")
-      );
+      cpSync(uvPath, resolve(this.options.path || "", uvRandomPath), {
+        recursive: true,
+      });
     }
   }
 }
