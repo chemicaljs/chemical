@@ -223,7 +223,7 @@ async function encodeService(url, service) {
         );
       }
       break;
-    case "rammerhead":
+    case "rh":
       if (rammerheadEnabled) {
         return window.location.origin + (await rammerheadEncode(url));
       }
@@ -287,7 +287,7 @@ window.chemical.decode = async function (url, config) {
         return __uv$config.decodeUrl(url.split(__uv$config.prefix)[1]);
       }
       break;
-    case "rammerhead":
+    case "rh":
       if (rammerheadEnabled) {
         return await rammerheadEncode(
           url.split(window.location.origin)[1],

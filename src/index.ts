@@ -51,7 +51,7 @@ interface WispOptions {
 interface Options {
   uv?: boolean;
   scramjet?: boolean;
-  rammerhead?: boolean;
+  rh?: boolean;
   demoMode?: boolean;
   default?: string;
   wispOptions?: WispOptions;
@@ -90,8 +90,8 @@ class ChemicalServer {
       options.scramjet = true;
     }
 
-    if (options.rammerhead === undefined) {
-      options.rammerhead = true;
+    if (options.rh === undefined) {
+      options.rh = true;
     }
 
     if (options.demoMode === undefined) {
@@ -146,7 +146,7 @@ class ChemicalServer {
       );
 
       if (this.options.default) {
-        if (["uv", "rammerhead", "scramjet"].includes(this.options.default)) {
+        if (["uv", "rh", "scramjet"].includes(this.options.default)) {
           chemicalMain =
             `const defaultService = "${this.options.default}";\n\n` +
             chemicalMain;
@@ -167,7 +167,7 @@ class ChemicalServer {
         chemicalMain;
       chemicalMain =
         "const rammerheadEnabled = " +
-        String(this.options.rammerhead) +
+        String(this.options.rh) +
         ";\n" +
         chemicalMain;
       chemicalMain =
@@ -198,7 +198,7 @@ class ChemicalServer {
         chemicalSW;
       chemicalSW =
         "const rammerheadEnabled = " +
-        String(this.options.rammerhead) +
+        String(this.options.rh) +
         ";\n" +
         chemicalSW;
       chemicalSW =
@@ -218,7 +218,7 @@ class ChemicalServer {
       this.app.use("/scramjet/", express.static(scramjetPath));
     }
     this.server.on("request", (req: Request, res: Response) => {
-      if (this.options.rammerhead && shouldRouteRh(req)) {
+      if (this.options.rh && shouldRouteRh(req)) {
         routeRhRequest(req, res);
       } else {
         this.app(req, res);
@@ -233,7 +233,7 @@ class ChemicalServer {
           }
         }
         wisp.routeRequest(req, socket, head);
-      } else if (this.options.rammerhead && shouldRouteRh(req)) {
+      } else if (this.options.rh && shouldRouteRh(req)) {
         routeRhUpgrade(req, socket, head);
       } else {
         socket.end();
@@ -265,8 +265,8 @@ const ChemicalVitePlugin = (options: Options) => ({
       options.scramjet = true;
     }
 
-    if (options.rammerhead === undefined) {
-      options.rammerhead = true;
+    if (options.rh === undefined) {
+      options.rh = true;
     }
 
     if (options.demoMode === undefined) {
@@ -313,7 +313,7 @@ const ChemicalVitePlugin = (options: Options) => ({
       );
 
       if (options.default) {
-        if (["uv", "rammerhead", "scramjet"].includes(options.default)) {
+        if (["uv", "rh", "scramjet"].includes(options.default)) {
           chemicalMain =
             `const defaultService = "${options.default}";\n\n` + chemicalMain;
         } else {
@@ -333,7 +333,7 @@ const ChemicalVitePlugin = (options: Options) => ({
         chemicalMain;
       chemicalMain =
         "const rammerheadEnabled = " +
-        String(options.rammerhead) +
+        String(options.rh) +
         ";\n" +
         chemicalMain;
       chemicalMain =
@@ -361,7 +361,7 @@ const ChemicalVitePlugin = (options: Options) => ({
         chemicalSW;
       chemicalSW =
         "const rammerheadEnabled = " +
-        String(options.rammerhead) +
+        String(options.rh) +
         ";\n" +
         chemicalSW;
       chemicalSW =
@@ -383,7 +383,7 @@ const ChemicalVitePlugin = (options: Options) => ({
     server.middlewares.use(app);
 
     server.middlewares.use((req: Request, res: Request, next: Next) => {
-      if (options.rammerhead && shouldRouteRh(req)) {
+      if (options.rh && shouldRouteRh(req)) {
         routeRhRequest(req, res);
       } else {
         next();
@@ -409,7 +409,7 @@ const ChemicalVitePlugin = (options: Options) => ({
             }
           }
           wisp.routeRequest(req, socket, head);
-        } else if (options.rammerhead && shouldRouteRh(req)) {
+        } else if (options.rh && shouldRouteRh(req)) {
           routeRhUpgrade(req, socket, head);
         } else {
           for (const upgrader of upgraders) {
@@ -452,8 +452,8 @@ class ChemicalBuild {
       options.scramjet = true;
     }
 
-    if (options.rammerhead === undefined) {
-      options.rammerhead = true;
+    if (options.rh === undefined) {
+      options.rh = true;
     }
 
     if (options.demoMode === undefined) {
@@ -479,7 +479,7 @@ class ChemicalBuild {
     );
 
     if (this.options.default) {
-      if (["uv", "rammerhead", "scramjet"].includes(this.options.default)) {
+      if (["uv", "rh", "scramjet"].includes(this.options.default)) {
         chemicalMain =
           `const defaultService = "${this.options.default}";\n\n` +
           chemicalMain;
@@ -500,7 +500,7 @@ class ChemicalBuild {
       chemicalMain;
     chemicalMain =
       "const rammerheadEnabled = " +
-      String(this.options.rammerhead) +
+      String(this.options.rh) +
       ";\n" +
       chemicalMain;
     chemicalMain =
@@ -532,7 +532,7 @@ class ChemicalBuild {
       chemicalSW;
     chemicalSW =
       "const rammerheadEnabled = " +
-      String(this.options.rammerhead) +
+      String(this.options.rh) +
       ";\n" +
       chemicalSW;
     chemicalSW =
