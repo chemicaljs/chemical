@@ -304,7 +304,15 @@ window.chemical.decode = async function (url, config) {
 };
 
 window.chemical.setStore = function (key, value) {
-  const allowed = ["transport", "wisp", "service", "autoHttps", "searchEngine"];
+  const allowed = [
+    "transport",
+    "wisp",
+    "service",
+    "autoHttps",
+    "searchEngine",
+    "title",
+    "icon",
+  ];
 
   if (allowed.includes(key)) {
     localStorage.setItem("@chemical/" + key, String(value));
@@ -313,6 +321,24 @@ window.chemical.setStore = function (key, value) {
     }
     if (key === "wisp") {
       window.chemical.setWisp(value);
+    }
+    if (key === "title") {
+      const titleElement = document.querySelector("title[is='chemical-title']");
+
+      if (titleElement) {
+        titleElement.innerText =
+          value || titleElement.getAttribute("data-title");
+      }
+    }
+    if (key === "icon") {
+      const iconElement = document.querySelector("link[is='chemical-icon']");
+
+      if (iconElement) {
+        iconElement.setAttribute(
+          "href",
+          value || iconElement.getAttribute("data-icon")
+        );
+      }
     }
     window.dispatchEvent(
       new CustomEvent("chemicalStoreChange", {
@@ -333,6 +359,10 @@ window.chemical.getStore = function (key) {
     wisp: window.chemical.wisp,
     service: "uv",
     autoHttps: false,
+    title: document.querySelector("title[is='chemical-title']")?.innerText,
+    icon: document
+      .querySelector("link[is='chemical-icon']")
+      ?.getAttribute("href"),
   };
 
   return value || defaults[key];
