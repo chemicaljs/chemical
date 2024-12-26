@@ -19,7 +19,7 @@ class ChemicalInput extends HTMLInputElement {
             : false;
         let searchEngine =
           this.dataset.searchEngineStore !== undefined
-            ? localStorage.getItem("@chemical/searchEngine")
+            ? localStorage.getItem("@chemical/searchEngine") || this.dataset.searchEngine
             : this.dataset.searchEngine;
         let action = this.dataset.action;
         let target = this.dataset.target;

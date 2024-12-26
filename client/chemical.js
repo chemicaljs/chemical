@@ -440,8 +440,7 @@ function setupFetch() {
       );
       const suggestions = await DDGSuggestions.json();
       return suggestions[1].slice(0, 9);
-    } catch (err) {
-      console.error(err);
+    } catch {
       return [];
     }
   };

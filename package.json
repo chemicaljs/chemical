@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "2.6.2",
+  "version": "2.6.4",
   "description": "Easily create your own web proxy with no experience required.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -31,8 +31,7 @@
   "scripts": {
     "update": "npx npm-check-updates -u && npm i",
     "build-uv": "node build-uv.js",
-    "build": "npm run build-uv && tsup",
-    "publish": "npm publish --access public"
+    "build": "npm run build-uv && tsup"
   },
   "dependencies": {
     "@mercuryworkshop/bare-mux": "^2.1.7",
