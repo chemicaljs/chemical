@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Easily create your own web proxy with no experience required.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -45,7 +45,6 @@
     "glob": "^11.0.0",
     "nanoid": "^5.0.9",
     "rammerhead": "https://github.com/chemicaljs/chemical/raw/main/rammerhead.tgz",
-    "tsc": "^2.0.4",
     "typescript": "^5.7.2",
     "vite": "^6.0.6"
   },
