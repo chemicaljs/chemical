@@ -18,8 +18,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       '@mercuryworkshop/scramjet':
-        specifier: github:MercuryWorkshop/scramjet
-        version: https://codeload.github.com/MercuryWorkshop/scramjet/tar.gz/e70d6b097bdbb9e1e9ef6bd5956daebef201e627(typescript@5.9.2)
+        specifier: https://github.com/MercuryWorkshop/scramjet/releases/download/latest/mercuryworkshop-scramjet-1.0.2-dev.tgz
+        version: https://github.com/MercuryWorkshop/scramjet/releases/download/latest/mercuryworkshop-scramjet-1.0.2-dev.tgz(typescript@5.9.2)
       '@mercuryworkshop/wisp-js':
         specifier: ^0.3.3
         version: 0.3.3
@@ -266,8 +266,8 @@ packages:
   '@mercuryworkshop/libcurl-transport@1.5.0':
     resolution: {integrity: sha512-FV3fFjJYoojmkolMESmZnWosz/tQ9AbVQurt6gcJX69BTvAXzjWf6ganpaeSvilQXVK59PDWyYT3gE0aShd12A==}
 
-  '@mercuryworkshop/scramjet@https://codeload.github.com/MercuryWorkshop/scramjet/tar.gz/e70d6b097bdbb9e1e9ef6bd5956daebef201e627':
-    resolution: {tarball: https://codeload.github.com/MercuryWorkshop/scramjet/tar.gz/e70d6b097bdbb9e1e9ef6bd5956daebef201e627}
+  '@mercuryworkshop/scramjet@https://github.com/MercuryWorkshop/scramjet/releases/download/latest/mercuryworkshop-scramjet-1.0.2-dev.tgz':
+    resolution: {tarball: https://github.com/MercuryWorkshop/scramjet/releases/download/latest/mercuryworkshop-scramjet-1.0.2-dev.tgz}
     version: 1.0.2-dev
 
   '@mercuryworkshop/wisp-js@0.3.3':
@@ -2009,7 +2009,7 @@ snapshots:
     dependencies:
       libcurl.js: 0.7.1
 
-  '@mercuryworkshop/scramjet@https://codeload.github.com/MercuryWorkshop/scramjet/tar.gz/e70d6b097bdbb9e1e9ef6bd5956daebef201e627(typescript@5.9.2)':
+  '@mercuryworkshop/scramjet@https://github.com/MercuryWorkshop/scramjet/releases/download/latest/mercuryworkshop-scramjet-1.0.2-dev.tgz(typescript@5.9.2)':
     dependencies:
       '@catppuccin/vscode': 3.18.0
       '@giancosta86/typedoc-readonly': 1.0.1(typedoc@0.28.12(typescript@5.9.2))

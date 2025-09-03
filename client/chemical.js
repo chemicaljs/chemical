@@ -470,19 +470,17 @@ if (uvEnabled) {
   await loadScript(`/${uvRandomPath}/${uvRandomPath}.config.js`);
 }
 if (scramjetEnabled) {
-  await loadScript("/scramjet/scramjet.shared.js");
-  await loadScript("/scramjet/scramjet.controller.js");
+  await loadScript("/scramjet/scramjet.all.js");
+  const { ScramjetController } = $scramjetLoadController();
+  
   chemical.scramjet = new ScramjetController({
-    prefix: "/~/scramjet/",
     files: {
-      wasm: "/scramjet/scramjet.wasm.js",
-      worker: "/scramjet/scramjet.worker.js",
-      client: "/scramjet/scramjet.client.js",
-      shared: "/scramjet/scramjet.shared.js",
+      wasm: "/scramjet/scramjet.wasm.wasm",
+      all: "/scramjet/scramjet.all.js",
       sync: "/scramjet/scramjet.sync.js",
-    },
-  });
-  chemical.scramjet.init("/chemical.sw.js");
+    }
+  })
+  chemical.scramjet.init();
 }
 window.chemical.connection = new window.BareMux.BareMuxConnection(
   "/baremux/worker.js"
