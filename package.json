@@ -1,0 +1,41 @@
+{
+  "name": "chemicaljs",
+  "version": "3.0.1",
+  "description": "Easily create your own web proxy with no experience required.",
+  "author": "Nebelung",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chemicaljs/chemical.git"
+  },
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./Chemical": "./Chemical.svelte",
+    "./Frame": "./Frame.svelte"
+  },
+  "scripts": {
+    "fetch-adblock": "curl -o blacklist.txt https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.8.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.8.1",
+  "dependencies": {
+    "@mercuryworkshop/epoxy-transport": "^3.0.1",
+    "@mercuryworkshop/libcurl-transport": "^2.0.5",
+    "@mercuryworkshop/proxy-bootstrap": "^0.0.5",
+    "@mercuryworkshop/scramjet": "^1.1.0",
+    "@mercuryworkshop/scramjet-controller": "^0.0.14",
+    "@mercuryworkshop/scramjet-utils": "^0.0.3",
+    "express": "^5.2.1"
+  },
+  "peerDependencies": {
+    "svelte": "^5.56.1"
+  }
+}
