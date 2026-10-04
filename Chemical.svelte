@@ -11,7 +11,7 @@
         "/wisp/",
     ),
     ready = $bindable(false),
-    onready,
+    onready= undefined,
   } = $props();
 
   let defaultConfig;
@@ -225,7 +225,6 @@
   const searchEngines = {
     google: "https://www.google.com/search?q=%s",
     duckduckgo: "https://duckduckgo.com/?q=%s",
-    ddg: "https://duckduckgo.com/?q=%s",
     bing: "https://www.bing.com/search?q=%s",
     brave: "https://search.brave.com/search?q=%s",
     yahoo: "https://search.yahoo.com/search?p=%s",
