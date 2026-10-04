@@ -15,7 +15,6 @@
   } = $props();
 
   let defaultConfig;
-  let rewriteUrl;
   let Controller;
   let HttpCachePlugin;
   let UrlWatcherPlugin;
@@ -74,7 +73,7 @@
 
   async function initialize() {
     [
-      { defaultConfig, rewriteUrl },
+      { defaultConfig },
       { Controller },
       {
         HttpCachePlugin,
@@ -112,17 +111,6 @@
 
     if (onready) {
       onready();
-    }
-  }
-
-  export function url(url, plugins = []) {
-    if (ready) {
-      let newFrame = controller.createFrame(null, plugins);
-
-      return rewriteUrl(url, newFrame.context, {
-        origin: new URL(location.href),
-        base: new URL(location.href),
-      });
     }
   }
 
