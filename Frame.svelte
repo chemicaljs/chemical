@@ -6,10 +6,10 @@
     chemical = $bindable(),
     class: className,
     src = $bindable(),
-    onchange,
+    onchange= undefined,
     cache = false,
-    linkhandler,
-    catchlinks,
+    linkhandler= undefined,
+    catchlinks= undefined,
     adblock = false,
     ...restProps
   } = $props();
