@@ -195,7 +195,7 @@
     const q = encodeURIComponent(query.trim());
 
     try {
-      const request = await chemical.fetch(
+      const request = await fetch(
         "https://www.google.com/complete/s?q=" + q + "&client=gws-wiz",
       );
       const results = await request.text();
