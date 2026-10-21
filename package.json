@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "3.0.4",
+  "version": "3.1.0",
   "description": "Easily create your own web proxy with no experience required.",
   "author": "Nebelung",
   "license": "AGPL-3.0-only",
@@ -13,7 +13,8 @@
   "exports": {
     ".": "./index.js",
     "./Chemical": "./Chemical.svelte",
-    "./Frame": "./Frame.svelte"
+    "./Frame": "./Frame.svelte",
+    "./searchEngines": "./searchEngines.js"
   },
   "scripts": {
     "fetch-adblock": "curl -o blacklist.txt https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt"
