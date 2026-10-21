@@ -11,7 +11,7 @@
         "/wisp/",
     ),
     ready = $bindable(false),
-    onready= undefined,
+    onready = undefined,
   } = $props();
 
   let defaultConfig;
@@ -147,51 +147,6 @@
     }
   }
 
-  async function autocomplete(query, engine = "google") {
-    if (!query || !query.trim()) return [];
-
-    const q = encodeURIComponent(query.trim());
-
-    const endpoints = {
-      google: `https://suggestqueries.google.com/complete/search?client=firefox&q=${q}`,
-      duckduckgo: `https://duckduckgo.com/ac/?q=${q}`,
-      bing: `https://api.bing.com/osjson.aspx?query=${q}`,
-      brave: `https://search.brave.com/api/suggest?q=${q}`,
-      yahoo: `https://ff.search.yahoo.com/gossip?output=fxjson&command=${q}`,
-    };
-
-    const url = endpoints[engine];
-
-    if (!url) {
-      throw new Error(
-        `Unsupported engine "${engine}". Supported: google, duckduckgo, bing, brave, yahoo`,
-      );
-    }
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
-
-      switch (engine) {
-        case "google":
-          return data[1];
-        case "duckduckgo":
-          return data.map((item) => item.phrase);
-        case "bing":
-          return data[1];
-        case "brave":
-          return data[1];
-        case "yahoo":
-          return data[1];
-      }
-    } catch (error) {
-      console.error(`Autocomplete error (${engine}):`, error);
-      return [];
-    }
-  }
-
   async function createDataURL(url) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -210,15 +165,81 @@
     });
   }
 
-  const searchEngines = {
-    google: "https://www.google.com/search?q=%s",
-    duckduckgo: "https://duckduckgo.com/?q=%s",
-    bing: "https://www.bing.com/search?q=%s",
-    brave: "https://search.brave.com/search?q=%s",
-    yahoo: "https://search.yahoo.com/search?p=%s",
-  };
+  async function autocomplete(query) {
+    function parseIntoParts(data) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(data, "text/html");
 
-  export { fetch, autocomplete, createDataURL, searchEngines };
+      return Array.from(doc.body.childNodes).map((node) => {
+        return {
+          text: node.textContent,
+          highlight: node.nodeType === 1 && node.tagName === "B",
+        };
+      });
+    }
+
+    function decodeText(text) {
+      const entities = {
+        "&#39;": "'",
+        "&apos;": "'",
+        "&quot;": '"',
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+      };
+      return text.replace(/&#?\w+;/g, (match) => entities[match] || match);
+    }
+
+    if (!query || !query.trim()) return [];
+
+    const q = encodeURIComponent(query.trim());
+
+    try {
+      const request = await chemical.fetch(
+        "https://www.google.com/complete/s?q=" + q + "&client=gws-wiz",
+      );
+      const results = await request.text();
+      const parsedResults = JSON.parse(
+        results.split("window.google.ac.h(")[1].slice(0, -1),
+      )[0];
+
+      const resultsData = parsedResults.map(async (item) => {
+        if (item[3]) {
+          let data = {
+            title: decodeText(item[3].zh),
+          };
+
+          if (item[3].zi) {
+            data.description = decodeText(item[3].zi);
+          }
+
+          if (item[3].zs) {
+            let image = await createDataURL(item[3].zs);
+            data.image = image;
+          }
+
+          return {
+            type: "rich",
+            data,
+          };
+        } else {
+          return {
+            type: "plain",
+            data: parseIntoParts(item[0]),
+            fullURL: parseIntoParts(item[0])
+              .map((item) => item.text)
+              .join(""),
+          };
+        }
+      });
+      return await Promise.all(resultsData);
+    } catch (error) {
+      console.error("Autocomplete error", error);
+      return [];
+    }
+  }
+
+  export { fetch, autocomplete, createDataURL };
 </script>
 
 <svelte:head>
