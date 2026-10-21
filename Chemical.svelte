@@ -204,7 +204,7 @@
       )[0];
 
       const resultsData = parsedResults.map(async (item) => {
-        if (item[3]) {
+        if (item[3] && item[3].zh) {
           let data = {
             title: decodeText(item[3].zh),
           };
