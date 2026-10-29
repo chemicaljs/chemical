@@ -118,7 +118,7 @@
       ) {
         finalUrl = "https://" + targetSrc;
       } else if (searchEngine) {
-        finalUrl = searchEngine.replac("%s", encodeURIComponent(targetSrc));
+        finalUrl = searchEngine.replace("%s", encodeURIComponent(targetSrc));
       }
 
       frame.go(finalUrl);
