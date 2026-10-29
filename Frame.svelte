@@ -20,6 +20,7 @@
 
   let frame;
   let frameRef = $state();
+  let resetKey = $state(0);
 
   function handlePointerDown(e) {
     onpointerdown?.(e);
@@ -49,7 +50,7 @@
   }
 
   $effect(() => {
-    if (ready && chemical) {
+    if (ready && chemical && frameRef) {
       let plugins = [];
 
       if (onchange) {
@@ -101,44 +102,53 @@
     }
   });
 
-  export function go(src, options = {}) {
+  export function go(targetSrc, options = {}) {
     let autoHttps = options.autoHttps || false;
     let searchEngine = options.searchEngine;
 
     if (frame) {
-      if (src.match(/^https?:\/\//)) {
-        frame.go(src);
+      let finalUrl = targetSrc;
+
+      if (targetSrc.match(/^https?:\/\//)) {
+        finalUrl = targetSrc;
       } else if (
         autoHttps === true &&
-        src.includes(".") &&
-        !src.includes(" ")
+        targetSrc.includes(".") &&
+        !targetSrc.includes(" ")
       ) {
-        frame.go("https://" + src);
+        finalUrl = "https://" + targetSrc;
       } else if (searchEngine) {
-        frame.go(searchEngine.replace("%s", encodeURIComponent(src)));
-      } else {
-        frame.go(src);
+        finalUrl = searchEngine.replac("%s", encodeURIComponent(targetSrc));
       }
+
+      frame.go(finalUrl);
     }
   }
 
+  export function reset() {
+    src = undefined;
+    resetKey++;
+  }
+
   export function reload() {
-    frameRef.contentWindow.location.reload();
+    frameRef?.contentWindow?.location.reload();
   }
   export function forward() {
-    frameRef.contentWindow.history.forward();
+    frameRef?.contentWindow?.history.forward();
   }
   export function back() {
-    frameRef.contentWindow.history.back();
+    frameRef?.contentWindow?.history.back();
   }
   export function getTitle() {
-    return frameRef.contentWindow.document.title;
+    return frameRef?.contentWindow?.document.title;
   }
 </script>
 
-<iframe
-  bind:this={frameRef}
-  onload={handleLoad}
-  class={className}
-  {...restProps}
-></iframe>
+{#key resetKey}
+  <iframe
+    bind:this={frameRef}
+    onload={handleLoad}
+    class={className}
+    {...restProps}
+  ></iframe>
+{/key}

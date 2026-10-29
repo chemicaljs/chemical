@@ -1,6 +1,7 @@
 <script>
   import EpoxyTransport from "@mercuryworkshop/epoxy-transport";
   import LibcurlClient from "@mercuryworkshop/libcurl-transport";
+  import { evaluate } from "mathjs";
 
   let {
     transport = $bindable("epoxy"),
@@ -165,6 +166,40 @@
     });
   }
 
+  function getMathResult(rawQuery) {
+    const query = rawQuery?.trim().toLowerCase();
+    if (!query || !isNaN(Number(query))) return null;
+
+    const safeQuery = query
+      .replace(/\bto\s+in\b/g, "to inch")
+      .replace(/(\d\s*)in\b/g, "$1inch");
+
+    try {
+      const result = evaluate(safeQuery);
+
+      if (typeof result === "number" && !isNaN(result) && isFinite(result)) {
+        const cleanResult = parseFloat(result.toFixed(6));
+        if (cleanResult.toString() === query.replace(/\s/g, "")) return null;
+        return cleanResult.toString();
+      }
+
+      if (result && (result.isUnit || result.type === "Unit")) {
+        const unitString = result.toString();
+        const normalizedQuery = query.replace(/\s/g, "");
+        const normalizedResult = unitString
+          .replace(/\s/g, "")
+          .replace("inch", "in");
+
+        if (normalizedQuery === normalizedResult) return null;
+        return unitString;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   async function autocomplete(query) {
     function parseIntoParts(data) {
       const parser = new DOMParser();
@@ -192,7 +227,21 @@
 
     if (!query || !query.trim()) return [];
 
-    const q = encodeURIComponent(query.trim());
+    const trimmed = query.trim();
+    const mathResult = getMathResult(trimmed);
+    const mathSuggestion = mathResult
+      ? [
+          {
+            type: "math",
+            data: {
+              equation: trimmed,
+              result: mathResult,
+            },
+          },
+        ]
+      : [];
+
+    const q = encodeURIComponent(trimmed);
 
     try {
       const request = await fetch(
@@ -223,16 +272,18 @@
             data,
           };
         } else {
+          const parts = parseIntoParts(item[0]);
           return {
             type: "plain",
-            data: parseIntoParts(item[0]),
-            fullURL: parseIntoParts(item[0])
-              .map((item) => item.text)
-              .join(""),
+            data: parts,
+            fullURL: parts.map((p) => p.text).join(""),
           };
         }
       });
-      return await Promise.all(resultsData);
+
+      const fetchedSuggestions = await Promise.all(resultsData);
+
+      return [...mathSuggestion, ...fetchedSuggestions];
     } catch (error) {
       console.error("Autocomplete error", error);
       return [];

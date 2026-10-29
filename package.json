@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "Easily create your own web proxy with no experience required.",
   "author": "Nebelung",
   "license": "AGPL-3.0-only",
@@ -34,7 +34,8 @@
     "@mercuryworkshop/scramjet": "2.0.67-alpha.2",
     "@mercuryworkshop/scramjet-controller": "^0.0.14",
     "@mercuryworkshop/scramjet-utils": "^0.0.3",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "mathjs": "^15.2.0"
   },
   "peerDependencies": {
     "svelte": "^5.56.1"
