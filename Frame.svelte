@@ -6,18 +6,47 @@
     chemical = $bindable(),
     class: className,
     src = $bindable(),
-    onchange= undefined,
+    onchange = undefined,
     cache = false,
-    linkhandler= undefined,
-    catchlinks= undefined,
+    linkhandler = undefined,
+    catchlinks = undefined,
     adblock = false,
+    onpointerdown = undefined,
+    pointerdown = undefined,
+    onkeydown = undefined,
+    onload = undefined,
     ...restProps
   } = $props();
 
-  let newSrc = $state();
-
   let frame;
   let frameRef = $state();
+
+  function handlePointerDown(e) {
+    onpointerdown?.(e);
+    pointerdown?.(e);
+  }
+
+  function handleKeydown(e) {
+    onkeydown?.(e);
+  }
+
+  function bindFrameEvents() {
+    try {
+      const win = frameRef?.contentWindow;
+      if (!win) return;
+
+      win.removeEventListener("pointerdown", handlePointerDown);
+      win.removeEventListener("keydown", handleKeydown);
+
+      win.addEventListener("pointerdown", handlePointerDown);
+      win.addEventListener("keydown", handleKeydown);
+    } catch {}
+  }
+
+  function handleLoad(e) {
+    bindFrameEvents();
+    onload?.(e);
+  }
 
   $effect(() => {
     if (ready && chemical) {
@@ -63,7 +92,12 @@
       frame = chemical.createFrame(frameRef, {
         plugins,
       });
-      frame.go(src);
+
+      bindFrameEvents();
+
+      if (src) {
+        frame.go(src);
+      }
     }
   });
 
@@ -91,12 +125,20 @@
   export function reload() {
     frameRef.contentWindow.location.reload();
   }
-   export function forward() {
+  export function forward() {
     frameRef.contentWindow.history.forward();
   }
-   export function back() {
+  export function back() {
     frameRef.contentWindow.history.back();
+  }
+  export function getTitle() {
+    return frameRef.contentWindow.document.title;
   }
 </script>
 
-<iframe bind:this={frameRef} class={className} {...restProps}></iframe>
+<iframe
+  bind:this={frameRef}
+  onload={handleLoad}
+  class={className}
+  {...restProps}
+></iframe>
