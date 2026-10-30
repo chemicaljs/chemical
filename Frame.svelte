@@ -142,6 +142,9 @@
   export function getTitle() {
     return frameRef?.contentWindow?.document.title;
   }
+  export function fullscreen() {
+    return frameRef?.contentWindow?.requestFullscreen();
+  }
 </script>
 
 {#key resetKey}
