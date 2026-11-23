@@ -38,7 +38,7 @@ export class Chemical {
     this.app.use(express.static(this.staticDir));
 
     if (this.spaMode) {
-      this.app.get("*", (req, res) => {
+      this.app.get("/{*splat}", (req, res) => {
         res.sendFile(path.resolve(process.cwd(), this.staticDir, "index.html"));
       });
     }

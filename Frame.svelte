@@ -11,6 +11,7 @@
     linkhandler = undefined,
     catchlinks = undefined,
     adblock = false,
+    plugins: userPlugins = undefined,
     onpointerdown = undefined,
     pointerdown = undefined,
     onkeydown = undefined,
@@ -89,6 +90,10 @@
         });
         plugins.push(adblocker);
       }
+
+      if(userPlugins)
+        plugins.push(userPlugins)
+
 
       frame = chemical.createFrame(frameRef, {
         plugins,
