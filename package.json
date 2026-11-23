@@ -2,8 +2,8 @@
   "name": "chemicaljs",
   "version": "3.1.7",
   "description": "Easily create your own web proxy with no experience required.",
-  "author": "Nebelung",
   "license": "AGPL-3.0-only",
+  "author": "Nebelung",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chemicaljs/chemical.git"
@@ -17,16 +17,12 @@
     "./searchEngines": "./searchEngines.js"
   },
   "scripts": {
-    "fetch-adblock": "curl -o blacklist.txt https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt"
+    "fetch-adblock": "curl -o blacklist.txt https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
   },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "12.8.1",
-      "onFail": "download"
-    }
-  },
-  "packageManager": "pnpm@12.8.1",
   "dependencies": {
     "@mercuryworkshop/epoxy-transport": "^3.0.2",
     "@mercuryworkshop/libcurl-transport": "^2.0.6",
@@ -37,7 +33,19 @@
     "express": "^5.3.0",
     "mathjs": "^15.2.0"
   },
+  "devDependencies": {
+    "oxfmt": "^0.79.0",
+    "oxlint": "^1.94.0"
+  },
   "peerDependencies": {
     "svelte": "^5.56.1"
-  }
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.8.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.8.1"
 }

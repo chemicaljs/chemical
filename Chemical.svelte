@@ -52,7 +52,6 @@
         break;
       default:
         throw new Error("Invalid transport");
-        break;
     }
 
     await newTransport.init();
@@ -148,23 +147,22 @@
     }
   }
 
+
   async function createDataURL(url) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+
+      return await new Promise((resolve) => {
         const reader = new FileReader();
-
-        reader.onloadend = function () {
-          resolve(reader.result);
-        };
-
+        reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(blob);
-      } catch {
-        resolve(undefined);
-      }
-    });
+      });
+    } catch {
+      return undefined;
+    }
   }
+
 
   function getMathResult(rawQuery) {
     const query = rawQuery?.trim().toLowerCase();
