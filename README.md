@@ -26,8 +26,3 @@ pnpm start
 ## License
 
 Chemical uses the AGPL 3.0 license.
-
-## Todo
-
-- Custom internal:// urls
-- horizontal tabs

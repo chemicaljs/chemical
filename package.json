@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Easily create your own web proxy with no experience required.",
   "author": "Nebelung",
   "license": "AGPL-3.0-only",
@@ -28,7 +28,8 @@
     "./Autocomplete": "./Autocomplete.svelte",
     "./tabs": "./tabs/index.js",
     "./searchEngines": "./searchEngines.js",
-    "./AdblockPlugin": "./AdblockPlugin.js"
+    "./AdblockPlugin": "./AdblockPlugin.js",
+    "./InternalUrlsPlugin": "./InternalUrlsPlugin.js"
   },
   "scripts": {
     "dev": "vite",

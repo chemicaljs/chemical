@@ -502,7 +502,7 @@
       tab.favicon = "";
     }
 
-    if (!meta?.fromHistory) {
+    if (!meta?.fromHistory && meta?.recordHistory !== false) {
       recordHistory(id, url, tab.favicon);
     }
 

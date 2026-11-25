@@ -1,5 +1,5 @@
 <script>
-  import { untrack } from "svelte";
+  import { getContext, untrack } from "svelte";
   import blacklistText from "./blacklist.txt?raw";
 
   const MAX_HISTORY = 500;
@@ -29,6 +29,8 @@
     ...restProps
   } = $props();
 
+  const tabsCtx = getContext("chemical:tabs");
+
   function isSameOrigin(url) {
     if (typeof location === "undefined") return false;
     try {
@@ -36,6 +38,30 @@
     } catch {
       return false;
     }
+  }
+
+  function getInternalPlugins() {
+    const raw = [
+      ...(Array.isArray(userPlugins)
+        ? userPlugins
+        : userPlugins
+          ? [userPlugins]
+          : []),
+      ...(Array.isArray(chemical?.defaults?.plugins)
+        ? chemical.defaults.plugins
+        : chemical?.defaults?.plugins
+          ? [chemical.defaults.plugins]
+          : []),
+    ];
+    return raw.filter((p) => p?.__chemicalInternalUrls);
+  }
+
+  function matchInternalUrl(rawUrl) {
+    for (const plugin of getInternalPlugins()) {
+      const resolved = plugin.resolve(rawUrl);
+      if (resolved) return resolved;
+    }
+    return null;
   }
 
   function getStorageKey() {
@@ -102,6 +128,10 @@
 
   let frame = $state.raw();
   let frameRef = $state();
+  let internalEl = $state();
+  let internalFrameRef = $state();
+  let activeInternal = $state.raw(null);
+  let internalRenderKey = $state(0);
   let resetKey = $state(0);
   let loadedSrc;
   let pendingGo = null;
@@ -144,6 +174,10 @@
   function resolveUrl(targetSrc, options = {}) {
     const raw = String(targetSrc ?? "").trim();
     if (!raw) return "";
+
+    const internal = matchInternalUrl(raw);
+    if (internal) return internal.url;
+
     if (/^https?:\/\//i.test(raw)) return raw;
 
     const { autoHttps: https = false, searchEngine: engine } = options;
@@ -233,6 +267,7 @@
   function decodeOpenUrl(url, base, client, activeFrame) {
     const raw = String(url ?? "").trim();
     if (!raw || raw === "about:blank" || /^javascript:/i.test(raw)) return "";
+    if (matchInternalUrl(raw)) return "";
 
     if (
       raw.startsWith(location.origin) ||
@@ -375,8 +410,8 @@
       : "";
   }
 
-  function syncTitle(rawTitle) {
-    const title = (rawTitle || getTitle() || "").trim();
+  function setFrameTitle(rawTitle) {
+    const title = String(rawTitle ?? "").trim();
     if (!title) return;
     if (currentTitle !== title) {
       currentTitle = title;
@@ -385,7 +420,21 @@
     patchVisit({ title });
   }
 
+  function setFrameFavicon(icon = "") {
+    const next = String(icon ?? "");
+    if (currentFavicon !== next) {
+      currentFavicon = next;
+      onfavicon?.(next);
+    }
+    if (next) patchVisit({ favicon: next });
+  }
+
+  function syncTitle(rawTitle) {
+    setFrameTitle(rawTitle || getTitle());
+  }
+
   async function syncMeta(iframe = frameRef) {
+    if (activeInternal) return;
     const targetUrl = currentUrl;
     syncTitle(iframe?.contentDocument?.title);
     if (!targetUrl || isSameOrigin(targetUrl)) return;
@@ -442,6 +491,7 @@
         }
 
         if (
+          !activeInternal &&
           mutations.some(
             ({ target, addedNodes }) =>
               target?.matches?.('link[rel~="icon"]') ||
@@ -464,7 +514,10 @@
     } catch {}
   }
 
-  function handleUrlChange(rawUrl) {
+  function handleUrlChange(
+    rawUrl,
+    { internal = false, recordHistory = true } = {},
+  ) {
     const url = rawUrl ? String(rawUrl) : "";
     if (url && isSameOrigin(url)) return;
 
@@ -474,7 +527,7 @@
       if (navIndex >= 0 && navIndex < navHistory.length) {
         navHistory[navIndex] = url;
       }
-      if (historyNavSettled) {
+      if (internal || historyNavSettled) {
         clearPendingHistory();
       }
     } else if (navHistory.length === 0) {
@@ -485,10 +538,14 @@
       navIndex = navHistory.length - 1;
     }
 
-    let originChanged = !url;
-    try {
-      originChanged = new URL(currentUrl).origin !== new URL(url).origin;
-    } catch {}
+    let originChanged = !url || internal;
+    if (!originChanged) {
+      try {
+        originChanged = new URL(currentUrl).origin !== new URL(url).origin;
+      } catch {
+        originChanged = true;
+      }
+    }
 
     currentUrl = url;
     if (originChanged) {
@@ -500,12 +557,187 @@
       ontitle?.("");
     }
 
-    if (!fromHistory) {
+    if (!fromHistory && recordHistory) {
       recordVisit(url, originChanged ? "" : currentFavicon);
     }
 
-    onchange?.(url, { fromHistory });
-    syncMeta();
+    onchange?.(url, { fromHistory, internal, recordHistory });
+    if (!internal) syncMeta();
+  }
+
+  function openFromInternal(url) {
+    const resolved = url ? resolveUrl(url, { autoHttps, searchEngine }) : "";
+    if (linkhandler) return linkhandler(resolved);
+    if (resolved) go(resolved);
+    return null;
+  }
+
+  function getInternalContext(match) {
+    return {
+      url: match.url,
+      scheme: match.scheme,
+      path: match.path,
+      params: match.params,
+      searchParams: match.searchParams,
+      hash: match.hash,
+      go: (target, options) =>
+        go(target, { autoHttps, searchEngine, ...options }),
+      back,
+      forward,
+      canBack,
+      canForward,
+      reload,
+      openTab: openFromInternal,
+      setTitle: setFrameTitle,
+      setFavicon: setFrameFavicon,
+      chemical,
+      tabs: tabsCtx,
+      getHistory: () => (tabsCtx ? tabsCtx.getHistory() : getHistory()),
+      removeHistory: (id) =>
+        tabsCtx ? tabsCtx.removeHistory(id) : removeHistory(id),
+      clearHistory: () => (tabsCtx ? tabsCtx.clearHistory() : clearHistory()),
+    };
+  }
+
+  function getInternalProps(match) {
+    const base = getInternalContext(match);
+    const extra =
+      typeof match.route.props === "function"
+        ? match.route.props(base)
+        : match.route.props;
+    return extra && typeof extra === "object" ? { ...base, ...extra } : base;
+  }
+
+  function getInternalHtml(match) {
+    if (typeof match.route.html === "function") {
+      return String(match.route.html(getInternalContext(match)) ?? "");
+    }
+    return String(match.route.html ?? "");
+  }
+
+  function resolveInternalHref(rawHref, match) {
+    const raw = String(rawHref ?? "").trim();
+    if (!raw || raw === "about:blank" || /^javascript:/i.test(raw)) return "";
+
+    const matched = matchInternalUrl(raw);
+    if (matched) return matched.url;
+    if (/^https?:\/\//i.test(raw)) return raw;
+
+    if (raw.startsWith("/")) {
+      return `${match.scheme}://${raw.replace(/^\/+/, "")}`;
+    }
+
+    const baseDir = match.path.includes("/")
+      ? match.path.slice(0, match.path.lastIndexOf("/") + 1)
+      : "";
+    return `${match.scheme}://${baseDir}${raw}`;
+  }
+
+  function applyInternalMeta(match) {
+    const ctx = getInternalContext(match);
+    const title =
+      typeof match.route.title === "function"
+        ? match.route.title(ctx)
+        : match.route.title;
+    const favicon =
+      typeof match.route.favicon === "function"
+        ? match.route.favicon(ctx)
+        : match.route.favicon;
+
+    setFrameTitle(title || match.path || match.url);
+    setFrameFavicon(favicon || "");
+  }
+
+  function bindInternalFrame(iframe, match) {
+    try {
+      const win = iframe?.contentWindow;
+      const doc = iframe?.contentDocument;
+      if (!win || !doc) return;
+
+      const ctx = getInternalContext(match);
+      win.chemical = {
+        url: ctx.url,
+        scheme: ctx.scheme,
+        path: ctx.path,
+        params: ctx.params,
+        searchParams: ctx.searchParams,
+        hash: ctx.hash,
+        go: ctx.go,
+        back: ctx.back,
+        forward: ctx.forward,
+        canBack: ctx.canBack,
+        canForward: ctx.canForward,
+        reload: ctx.reload,
+        open: ctx.openTab,
+        setTitle: ctx.setTitle,
+        setFavicon: ctx.setFavicon,
+      };
+
+      win.removeEventListener("pointerdown", handlePointerDown);
+      win.removeEventListener("keydown", handleKeydown);
+      win.addEventListener("pointerdown", handlePointerDown);
+      win.addEventListener("keydown", handleKeydown);
+
+      doc.addEventListener("click", (e) => {
+        if (e.defaultPrevented || e.button !== 0) return;
+        const link = e
+          .composedPath()
+          .find((el) => el?.tagName === "A" && el.getAttribute("href"));
+        if (!link) return;
+
+        const rawHref = link.getAttribute("href")?.trim();
+        if (
+          !rawHref ||
+          rawHref.startsWith("#") ||
+          /^javascript:/i.test(rawHref)
+        ) {
+          return;
+        }
+
+        e.preventDefault();
+        const resolved = resolveInternalHref(rawHref, match);
+        if (!resolved) return;
+
+        const target = (link.getAttribute("target") || "").toLowerCase();
+        if (target === "_blank") ctx.openTab(resolved);
+        else go(resolved);
+      });
+
+      const openTarget = (url = "", target = "_blank") => {
+        const resolved = resolveInternalHref(url, match);
+        const t = String(target || "").toLowerCase();
+        if (t === "_self" || t === "_parent" || t === "_top") {
+          if (resolved) go(resolved);
+          return win;
+        }
+        return ctx.openTab(resolved);
+      };
+
+      try {
+        Object.defineProperty(win, "open", {
+          value: openTarget,
+          configurable: true,
+          writable: true,
+        });
+      } catch {
+        try {
+          win.open = openTarget;
+        } catch {}
+      }
+
+      observeHead(iframe);
+
+      if (!match.route.title && doc.title) {
+        setFrameTitle(doc.title);
+      }
+      if (!match.route.favicon) {
+        const iconHref =
+          doc.querySelector('link[rel~="icon"]')?.getAttribute("href") || "";
+        if (iconHref.startsWith("data:")) {
+          setFrameFavicon(iconHref);
+        }
+      }
+    } catch {}
   }
 
   const handlePointerDown = (e) => {
@@ -531,6 +763,29 @@
 
   function loadUrl(finalUrl) {
     if (!finalUrl || isSameOrigin(finalUrl)) return false;
+
+    const internal = matchInternalUrl(finalUrl);
+    if (internal) {
+      headObserver?.disconnect();
+      headObserver = null;
+      pendingGo = null;
+      activeInternal = internal;
+      handleUrlChange(internal.url, {
+        internal: true,
+        recordHistory: internal.history,
+      });
+      applyInternalMeta(internal);
+      return true;
+    }
+
+    if (activeInternal) {
+      headObserver?.disconnect();
+      headObserver = null;
+      activeInternal = null;
+      pendingGo = finalUrl;
+      return true;
+    }
+
     if (frame) {
       frame.go(finalUrl);
     } else {
@@ -542,6 +797,7 @@
   function clearFrame() {
     headObserver?.disconnect();
     headObserver = null;
+    activeInternal = null;
     loadedSrc = src;
     pendingGo = null;
     clearPendingHistory();
@@ -553,7 +809,7 @@
   }
 
   $effect(() => {
-    if (!ready || !chemical || !frameRef) {
+    if (activeInternal || !ready || !chemical || !frameRef) {
       frame = undefined;
       return;
     }
@@ -626,14 +882,16 @@
   });
 
   $effect(() => {
-    if (frame && src && src !== loadedSrc) {
-      const isInitial = loadedSrc === undefined;
-      loadedSrc = src;
-      untrack(() => {
-        if (!isInitial) clearPendingHistory();
-        loadUrl(resolveUrl(src, { autoHttps, searchEngine }));
-      });
-    }
+    if (!src || src === loadedSrc) return;
+    const target = resolveUrl(src, { autoHttps, searchEngine });
+    if (!target) return;
+
+    const isInitial = loadedSrc === undefined;
+    loadedSrc = src;
+    untrack(() => {
+      if (!isInitial) clearPendingHistory();
+      loadUrl(target);
+    });
   });
 
   export function go(targetSrc, options = {}) {
@@ -652,6 +910,11 @@
 
   export function reload() {
     if (!currentUrl) return;
+    if (activeInternal) {
+      internalRenderKey++;
+      applyInternalMeta(activeInternal);
+      return;
+    }
     frameRef?.contentWindow?.location.reload();
   }
 
@@ -728,6 +991,7 @@
   }
 
   export function getTitle() {
+    if (activeInternal) return currentTitle;
     try {
       return frameRef?.contentWindow?.document.title || "";
     } catch {
@@ -740,24 +1004,79 @@
   }
 
   export function fullscreen() {
-    return frameRef?.requestFullscreen?.();
+    const target = activeInternal ? (internalEl ?? internalFrameRef) : frameRef;
+    return target?.requestFullscreen?.();
   }
 </script>
 
-{#key resetKey}
-  <iframe
-    bind:this={frameRef}
-    onload={(e) => {
-      bindFrameEvents();
-      observeHead(e.currentTarget);
-      syncMeta(e.currentTarget);
-      if (pendingHistoryNav) {
-        if (historyNavSeen) clearPendingHistory();
-        else historyNavSettled = true;
-      }
-      onload?.(e);
-    }}
-    class={className}
-    {...restProps}
-  ></iframe>
-{/key}
+{#if activeInternal}
+  {#key internalRenderKey}
+    {#if activeInternal.route.component}
+      {@const Component = activeInternal.route.component}
+      <div
+        bind:this={internalEl}
+        data-chemical-internal=""
+        data-internal-url={activeInternal.url}
+        onpointerdown={handlePointerDown}
+        onkeydown={handleKeydown}
+        class={className}
+        {...restProps}
+      >
+        <Component {...getInternalProps(activeInternal)} />
+      </div>
+    {:else if activeInternal.route.snippet}
+      <div
+        bind:this={internalEl}
+        data-chemical-internal=""
+        data-internal-url={activeInternal.url}
+        onpointerdown={handlePointerDown}
+        onkeydown={handleKeydown}
+        class={className}
+        {...restProps}
+      >
+        {@render activeInternal.route.snippet(
+          getInternalContext(activeInternal),
+        )}
+      </div>
+    {:else}
+      <iframe
+        bind:this={internalFrameRef}
+        data-chemical-internal=""
+        data-internal-url={activeInternal.url}
+        srcdoc={getInternalHtml(activeInternal)}
+        onload={(e) => {
+          bindInternalFrame(e.currentTarget, activeInternal);
+          onload?.(e);
+        }}
+        class={className}
+        {...restProps}
+      ></iframe>
+    {/if}
+  {/key}
+{:else}
+  {#key resetKey}
+    <iframe
+      bind:this={frameRef}
+      onload={(e) => {
+        bindFrameEvents();
+        observeHead(e.currentTarget);
+        syncMeta(e.currentTarget);
+        if (pendingHistoryNav) {
+          if (historyNavSeen) clearPendingHistory();
+          else historyNavSettled = true;
+        }
+        onload?.(e);
+      }}
+      class={className}
+      {...restProps}
+    ></iframe>
+  {/key}
+{/if}
+
+<style>
+  :where(div[data-chemical-internal]) {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+  }
+</style>

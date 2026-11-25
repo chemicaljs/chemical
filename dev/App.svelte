@@ -1,5 +1,6 @@
 <script>
   import Chemical from "chemicaljs/Chemical";
+  import { InternalUrlsPlugin } from "chemicaljs/InternalUrlsPlugin";
   import {
     AddressBar,
     Autocomplete,
@@ -17,9 +18,27 @@
   let ready = $state(false);
   let tabs = $state();
   let orientation = $state("horizontal");
+
+  import About from "./About.svelte";
+
+  const aboutIcon =
+    "data:image/svg+xml," +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#8ab4f8"/><rect x="7.2" y="7" width="1.6" height="5" rx="0.8" fill="#1e1e1e"/><circle cx="8" cy="4.8" r="1" fill="#1e1e1e"/></svg>',
+    );
+
+  const internalUrls = new InternalUrlsPlugin({
+    routes: {
+      about: {
+        title: "About Chemical",
+        favicon: aboutIcon,
+        component: About,
+      },
+    },
+  });
 </script>
 
-<Chemical bind:this={chemical} bind:ready />
+<Chemical bind:this={chemical} bind:ready plugins={[internalUrls]} />
 
 <div class="browser" data-orientation={orientation}>
   <Tabs bind:this={tabs} {chemical} {ready} persist>
@@ -73,6 +92,14 @@
           title="Toggle tab orientation"
         >
           {orientation === "vertical" ? "⬒" : "◧"}
+        </button>
+        <button
+          type="button"
+          onclick={() => tabs.go("internal://about")}
+          aria-label="Open internal about page"
+          title="Open internal://about"
+        >
+          ℹ
         </button>
         <button
           type="button"

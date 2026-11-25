@@ -2,6 +2,7 @@
   import EpoxyTransport from "@mercuryworkshop/epoxy-transport";
   import LibcurlClient from "@mercuryworkshop/libcurl-transport";
   import { evaluate } from "mathjs";
+  import { InternalUrlsPlugin } from "./InternalUrlsPlugin.js";
 
   let {
     transport = $bindable("epoxy"),
@@ -144,6 +145,9 @@
     get AdblockPlugin() {
       return AdblockPlugin;
     },
+    get InternalUrlsPlugin() {
+      return InternalUrlsPlugin;
+    },
   };
 
   export const defaults = {
@@ -179,11 +183,12 @@
     const resolved = [];
 
     for (const entry of list) {
-      if (!entry) continue;
+      if (!entry || entry.__chemicalInternalUrls) continue;
 
       if (typeof entry === "function") {
         if (typeof entry.prototype?.install === "function") {
-          resolved.push(new entry());
+          const instance = new entry();
+          if (!instance.__chemicalInternalUrls) resolved.push(instance);
         } else {
           resolved.push(...resolvePlugins(entry(pluginApi)));
         }
@@ -289,6 +294,18 @@
   export async function autocomplete(query) {
     const trimmed = query?.trim();
     if (!trimmed) return [];
+
+    const internalPlugins = (
+      Array.isArray(defaultPlugins) ? defaultPlugins : [defaultPlugins]
+    ).filter((p) => p?.__chemicalInternalUrls);
+
+    const internalMatches = internalPlugins.flatMap((p) => p.suggest(trimmed));
+    if (
+      internalMatches.length ||
+      internalPlugins.some((p) => p.matches(trimmed))
+    ) {
+      return internalMatches;
+    }
 
     const mathResult = evaluateMath(trimmed);
     const mathItems = mathResult

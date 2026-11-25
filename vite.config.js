@@ -22,6 +22,10 @@ export default defineConfig({
       "chemicaljs/tabs": path.resolve(__dirname, "tabs/index.js"),
       "chemicaljs/searchEngines": path.resolve(__dirname, "searchEngines.js"),
       "chemicaljs/AdblockPlugin": path.resolve(__dirname, "AdblockPlugin.js"),
+      "chemicaljs/InternalUrlsPlugin": path.resolve(
+        __dirname,
+        "InternalUrlsPlugin.js",
+      ),
       chemicaljs: path.resolve(__dirname, "index.js"),
     },
   },
