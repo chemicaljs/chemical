@@ -1,0 +1,7 @@
+dev/
+build/
+dist/
+vite.config.*
+.npmignore
+pnpm-workspace.yaml
+*.log

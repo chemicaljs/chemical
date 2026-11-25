@@ -1,6 +1,6 @@
 {
   "name": "chemicaljs",
-  "version": "3.1.7",
+  "version": "3.2.0",
   "description": "Easily create your own web proxy with no experience required.",
   "author": "Nebelung",
   "license": "AGPL-3.0-only",
@@ -10,13 +10,30 @@
   },
   "type": "module",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "Chemical.svelte",
+    "Frame.svelte",
+    "Autocomplete.svelte",
+    "tabs/",
+    "searchEngines.js",
+    "AdblockPlugin.js",
+    "sw.js",
+    "blacklist.txt"
+  ],
   "exports": {
     ".": "./index.js",
     "./Chemical": "./Chemical.svelte",
     "./Frame": "./Frame.svelte",
-    "./searchEngines": "./searchEngines.js"
+    "./Autocomplete": "./Autocomplete.svelte",
+    "./tabs": "./tabs/index.js",
+    "./searchEngines": "./searchEngines.js",
+    "./AdblockPlugin": "./AdblockPlugin.js"
   },
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node dev/server.js",
     "fetch-adblock": "curl -o blacklist.txt https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt"
   },
   "devEngines": {
@@ -31,13 +48,17 @@
     "@mercuryworkshop/epoxy-transport": "^3.0.2",
     "@mercuryworkshop/libcurl-transport": "^2.0.6",
     "@mercuryworkshop/proxy-bootstrap": "^0.0.5",
-    "@mercuryworkshop/scramjet": "2.0.67-alpha.2",
-    "@mercuryworkshop/scramjet-controller": "^0.0.14",
+    "@mercuryworkshop/scramjet": "2.1.0",
+    "@mercuryworkshop/scramjet-controller": "^0.1.0",
     "@mercuryworkshop/scramjet-utils": "^0.0.3",
     "express": "^5.3.0",
     "mathjs": "^15.2.0"
   },
   "peerDependencies": {
     "svelte": "^5.56.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "vite": "^8.3.8"
   }
 }

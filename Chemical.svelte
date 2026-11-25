@@ -6,17 +6,22 @@
   let {
     transport = $bindable("epoxy"),
     wisp = $bindable(
-      (location.protocol === "https:" ? "wss" : "ws") +
-        "://" +
-        location.host +
-        "/wisp/",
+      typeof location !== "undefined"
+        ? (location.protocol === "https:" ? "wss" : "ws") +
+            "://" +
+            location.host +
+            "/wisp/"
+        : "",
     ),
     ready = $bindable(false),
     onready = undefined,
+    plugins: defaultPlugins = [],
+    adblock: defaultAdblock = undefined,
   } = $props();
 
   let defaultConfig;
   let Controller;
+  let ManagedPlugin;
   let HttpCachePlugin;
   let UrlWatcherPlugin;
   let CatchEscapedLinksPlugin;
@@ -24,102 +29,103 @@
   let LinkHandlerPlugin;
   let AdblockPlugin;
 
-  let controller = $state();
+  let controller;
   let scramjetLoaded = $state(false);
   let controllerLoaded = $state(false);
+  let initializing = false;
   let currentTransport = transport;
   let currentWisp = wisp;
 
-  $effect(() => {
-    if (scramjetLoaded && controllerLoaded) {
-      initialize();
+  async function createTransport(kind = transport, wispUrl = wisp) {
+    let instance;
+    if (kind === "epoxy") {
+      instance = new EpoxyTransport({ wisp: wispUrl });
+    } else if (kind === "libcurl") {
+      instance = new LibcurlClient({ wisp: wispUrl });
+    } else {
+      throw new Error(`Invalid transport: ${kind}`);
     }
-  });
-
-  async function createTransport() {
-    let newTransport;
-
-    switch (transport) {
-      case "epoxy":
-        newTransport = new EpoxyTransport({
-          wisp,
-        });
-        break;
-      case "libcurl":
-        newTransport = new LibcurlClient({
-          wisp,
-        });
-        break;
-      default:
-        throw new Error("Invalid transport");
-        break;
-    }
-
-    await newTransport.init();
-
-    return newTransport;
+    await instance.init();
+    return instance;
   }
 
-  $effect(async () => {
-    if (ready) {
-      if (transport !== currentTransport || wisp !== currentWisp) {
-        let newTransport = await createTransport();
-
-        controller.transport = newTransport;
-        currentTransport = transport;
-        currentWisp = wisp;
-      }
-    }
-  });
-
   async function initialize() {
-    [
-      { defaultConfig },
-      { Controller },
-      {
-        HttpCachePlugin,
-        UrlWatcherPlugin,
-        CatchEscapedLinksPlugin,
-        EventHandlerPlugin,
-        LinkHandlerPlugin,
-      },
-      { AdblockPlugin },
-    ] = await Promise.all([
-      import("@mercuryworkshop/scramjet"),
-      import("@mercuryworkshop/scramjet-controller"),
-      import("@mercuryworkshop/scramjet-utils"),
-      import("./AdblockPlugin.js"),
-    ]);
+    const [scramjetMod, controllerMod, utilsMod, adblockMod] =
+      await Promise.all([
+        import("@mercuryworkshop/scramjet"),
+        import("@mercuryworkshop/scramjet-controller"),
+        import("@mercuryworkshop/scramjet-utils"),
+        import("./AdblockPlugin.js"),
+      ]);
+
+    ({ defaultConfig } = scramjetMod);
+    ({ Controller } = controllerMod);
+    ({
+      HttpCachePlugin,
+      UrlWatcherPlugin,
+      CatchEscapedLinksPlugin,
+      EventHandlerPlugin,
+      LinkHandlerPlugin,
+    } = utilsMod);
+    ({ AdblockPlugin } = adblockMod);
+
+    ManagedPlugin =
+      controllerMod.ManagedPlugin ??
+      utilsMod.ManagedPlugin ??
+      Object.getPrototypeOf(EventHandlerPlugin);
 
     await navigator.serviceWorker.register("/sw.js");
-
     const registration = await navigator.serviceWorker.ready;
-
     const serviceworker =
       navigator.serviceWorker.controller ?? registration.active;
 
-    let newTransport = await createTransport();
-
     controller = new Controller({
       serviceworker,
-      transport: newTransport,
+      transport: await createTransport(),
       scramjetConfig: defaultConfig,
     });
 
     await controller.wait();
-
     ready = true;
+    onready?.();
+  }
 
-    if (onready) {
-      onready();
+  $effect(() => {
+    if (scramjetLoaded && controllerLoaded && !initializing) {
+      initializing = true;
+      initialize();
     }
-  }
+  });
 
-  export function createFrame(...props) {
-    return controller.createFrame(...props);
-  }
+  $effect(() => {
+    if (!ready || (transport === currentTransport && wisp === currentWisp)) {
+      return;
+    }
+
+    const nextTransport = transport;
+    const nextWisp = wisp;
+    let cancelled = false;
+
+    createTransport(nextTransport, nextWisp)
+      .then((instance) => {
+        if (cancelled) return;
+        controller.transport = instance;
+        currentTransport = nextTransport;
+        currentWisp = nextWisp;
+      })
+      .catch((error) => {
+        if (!cancelled) console.error("Transport switch error", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  });
 
   export const plugins = {
+    get ManagedPlugin() {
+      return ManagedPlugin;
+    },
     get HttpCachePlugin() {
       return HttpCachePlugin;
     },
@@ -140,58 +146,138 @@
     },
   };
 
-  function fetch(...props) {
-    if (transport === "epoxy") {
-      return controller.transport.client.fetch(...props);
-    } else if (transport === "libcurl") {
-      return controller.transport.session.fetch(...props);
-    }
+  export const defaults = {
+    get plugins() {
+      return defaultPlugins;
+    },
+    get adblock() {
+      return defaultAdblock;
+    },
+  };
+
+  export function createPlugin({ name, dependencies = [], install }) {
+    if (!ManagedPlugin) throw new Error("Chemical is not ready yet");
+
+    const plugin = new ManagedPlugin(name, dependencies);
+    const baseInstall = ManagedPlugin.prototype.install;
+    plugin.install = function (frame) {
+      baseInstall?.call(this, frame);
+      return install.call(this, frame, this);
+    };
+    return plugin;
   }
 
-  async function createDataURL(url) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const reader = new FileReader();
+  const pluginApi = {
+    plugins,
+    createPlugin,
+    fetch: (...args) => fetch(...args),
+    createDataURL: (...args) => createDataURL(...args),
+  };
 
-        reader.onloadend = function () {
-          resolve(reader.result);
-        };
+  function resolvePlugins(entries) {
+    const list = Array.isArray(entries) ? entries : entries ? [entries] : [];
+    const resolved = [];
 
-        reader.readAsDataURL(blob);
-      } catch {
-        resolve(undefined);
+    for (const entry of list) {
+      if (!entry) continue;
+
+      if (typeof entry === "function") {
+        if (typeof entry.prototype?.install === "function") {
+          resolved.push(new entry());
+        } else {
+          resolved.push(...resolvePlugins(entry(pluginApi)));
+        }
+      } else if (typeof entry === "object") {
+        const isManaged =
+          (ManagedPlugin && entry instanceof ManagedPlugin) ||
+          typeof entry.tap === "function";
+        resolved.push(
+          !isManaged && typeof entry.install === "function"
+            ? createPlugin(entry)
+            : entry,
+        );
       }
+    }
+
+    return resolved;
+  }
+
+  export function createFrame(iframe, options = {}) {
+    const all = [
+      ...resolvePlugins(options.plugins),
+      ...resolvePlugins(defaultPlugins),
+    ];
+
+    let eventHandler = null;
+    const rest = [];
+
+    for (const plugin of all) {
+      const isEventHandler =
+        (EventHandlerPlugin && plugin instanceof EventHandlerPlugin) ||
+        plugin?.name === "event-handler";
+
+      if (isEventHandler) {
+        eventHandler ??= plugin;
+      } else {
+        rest.push(plugin);
+      }
+    }
+
+    return controller.createFrame(iframe, {
+      ...options,
+      plugins: eventHandler ? [eventHandler, ...rest] : rest,
     });
   }
 
-  function getMathResult(rawQuery) {
-    const query = rawQuery?.trim().toLowerCase();
-    if (!query || !isNaN(Number(query))) return null;
+  export function fetch(...args) {
+    if (!controller?.transport) {
+      throw new Error("Chemical is not ready yet");
+    }
+    if (transport === "epoxy") {
+      return controller.transport.client.fetch(...args);
+    }
+    if (transport === "libcurl") {
+      return controller.transport.session.fetch(...args);
+    }
+  }
 
-    const safeQuery = query
+  export async function createDataURL(url) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return undefined;
+      const blob = await response.blob();
+      return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => resolve(undefined);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
+  function evaluateMath(rawQuery) {
+    const query = rawQuery.toLowerCase();
+    if (!isNaN(Number(query))) return null;
+
+    const normalized = query
       .replace(/\bto\s+in\b/g, "to inch")
       .replace(/(\d\s*)in\b/g, "$1inch");
 
     try {
-      const result = evaluate(safeQuery);
+      const result = evaluate(normalized);
+      const compactQuery = query.replace(/\s/g, "");
 
-      if (typeof result === "number" && !isNaN(result) && isFinite(result)) {
-        const cleanResult = parseFloat(result.toFixed(6));
-        if (cleanResult.toString() === query.replace(/\s/g, "")) return null;
-        return cleanResult.toString();
+      if (typeof result === "number" && Number.isFinite(result)) {
+        const text = String(parseFloat(result.toFixed(6)));
+        return text === compactQuery ? null : text;
       }
 
       if (result && (result.isUnit || result.type === "Unit")) {
-        const unitString = result.toString();
-        const normalizedQuery = query.replace(/\s/g, "");
-        const normalizedResult = unitString
-          .replace(/\s/g, "")
-          .replace("inch", "in");
-
-        if (normalizedQuery === normalizedResult) return null;
-        return unitString;
+        const text = result.toString();
+        const compactResult = text.replace(/\s/g, "").replace("inch", "in");
+        return compactResult === compactQuery ? null : text;
       }
 
       return null;
@@ -200,107 +286,79 @@
     }
   }
 
-  async function autocomplete(query) {
-    function parseIntoParts(data) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(data, "text/html");
+  export async function autocomplete(query) {
+    const trimmed = query?.trim();
+    if (!trimmed) return [];
 
-      return Array.from(doc.body.childNodes).map((node) => {
-        return {
-          text: node.textContent,
-          highlight: node.nodeType === 1 && node.tagName === "B",
-        };
-      });
-    }
-
-    function decodeText(text) {
-      const entities = {
-        "&#39;": "'",
-        "&apos;": "'",
-        "&quot;": '"',
-        "&amp;": "&",
-        "&lt;": "<",
-        "&gt;": ">",
-      };
-      return text.replace(/&#?\w+;/g, (match) => entities[match] || match);
-    }
-
-    if (!query || !query.trim()) return [];
-
-    const trimmed = query.trim();
-    const mathResult = getMathResult(trimmed);
-    const mathSuggestion = mathResult
-      ? [
-          {
-            type: "math",
-            data: {
-              equation: trimmed,
-              result: mathResult,
-            },
-          },
-        ]
+    const mathResult = evaluateMath(trimmed);
+    const mathItems = mathResult
+      ? [{ type: "math", data: { equation: trimmed, result: mathResult } }]
       : [];
 
-    const q = encodeURIComponent(trimmed);
-
     try {
-      const request = await fetch(
-        "https://www.google.com/complete/s?q=" + q + "&client=gws-wiz",
+      const res = await fetch(
+        `https://www.google.com/complete/s?q=${encodeURIComponent(trimmed)}&client=gws-wiz`,
       );
-      const results = await request.text();
-      const parsedResults = JSON.parse(
-        results.split("window.google.ac.h(")[1].slice(0, -1),
-      )[0];
+      const body = await res.text();
+      const rawJson = body
+        .split("window.google.ac.h(")[1]
+        ?.replace(/\);?\s*$/, "");
 
-      const resultsData = parsedResults.map(async (item) => {
-        if (item[3] && item[3].zh) {
-          let data = {
-            title: decodeText(item[3].zh),
-          };
+      if (!rawJson) return mathItems;
 
-          if (item[3].zi) {
-            data.description = decodeText(item[3].zi);
+      const parser = new DOMParser();
+      const decode = (html) =>
+        parser.parseFromString(html, "text/html").body.textContent ?? "";
+      const fetchImage = (url) =>
+        Promise.race([
+          createDataURL(url),
+          new Promise((resolve) => setTimeout(() => resolve(undefined), 500)),
+        ]);
+
+      const entries = JSON.parse(rawJson)[0] ?? [];
+      const suggestions = await Promise.all(
+        entries.map(async (item) => {
+          const meta = item[3];
+          if (meta?.zh) {
+            const data = { title: decode(meta.zh) };
+            if (meta.zi) data.description = decode(meta.zi);
+            if (meta.zs) {
+              const image = await fetchImage(meta.zs);
+              if (image) data.image = image;
+            }
+            return { type: "rich", data };
           }
 
-          if (item[3].zs) {
-            let image = await createDataURL(item[3].zs);
-            data.image = image;
-          }
+          const doc = parser.parseFromString(item[0], "text/html");
+          const parts = Array.from(doc.body.childNodes, (node) => ({
+            text: node.textContent,
+            highlight: node.nodeType === 1 && node.tagName === "B",
+          }));
 
-          return {
-            type: "rich",
-            data,
-          };
-        } else {
-          const parts = parseIntoParts(item[0]);
           return {
             type: "plain",
             data: parts,
             fullURL: parts.map((p) => p.text).join(""),
           };
-        }
-      });
+        }),
+      );
 
-      const fetchedSuggestions = await Promise.all(resultsData);
-
-      return [...mathSuggestion, ...fetchedSuggestions];
+      return [...mathItems, ...suggestions];
     } catch (error) {
       console.error("Autocomplete error", error);
-      return [];
+      return mathItems;
     }
   }
-
-  export { fetch, autocomplete, createDataURL };
 </script>
 
 <svelte:head>
   <script
-    src="./scramjet/scramjet.js"
+    src="/scramjet/scramjet.js"
     onload={() => (scramjetLoaded = true)}
   ></script>
   {#if scramjetLoaded}
     <script
-      src="./controller/controller.api.js"
+      src="/controller/controller.api.js"
       onload={() => (controllerLoaded = true)}
     ></script>
   {/if}
